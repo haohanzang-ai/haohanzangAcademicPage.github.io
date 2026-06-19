@@ -1,243 +1,101 @@
-# Professional Website
+# Academic Pages
+**Academic Pages is a GitHub Pages template for personal and professional portfolio-oriented websites.**
 
-A modern, professional website built with **React**, **Vite**, **Tailwind CSS**, and a comprehensive **design system** with **Storybook** component documentation.
+![Academic Pages template example](images/themes/homepage-light.png "Academic Pages template example")
 
-## 🎯 Quick Overview
+# Getting Started
 
-This project features:
-- ✅ **Design System First** — Centralized design tokens and reusable components
-- ✅ **Component Library** — Storybook for isolated component development
-- ✅ **Git Version Control** — Track design evolution over time
-- ✅ **Persistent Memory** — Claude Code remembers project context across sessions
-- ✅ **TypeScript** — Type-safe development
-- ✅ **Tailwind CSS** — Utility-first styling
-- ✅ **Accessibility** — WCAG 2.1 AA compliant components
+1. Register a GitHub account if you don't have one and confirm your e-mail (required!)
+1. Click the "Use this template" button in the top right.
+1. On the "New repository" page, enter your public repository name as "[your GitHub username].github.io", which will also be your website's URL.
+1. Edit site-wide configuration in `_config.yml` and double check that the `url` is the one that you just selected in the previous step and that `repository` reflects the correct path for your repository.
+1. Add your site content, upload any files (like PDFs, .zip files, etc.) to the `files/` directory. They will appear at https://[your GitHub username].github.io/files/example.pdf.
+1. Check status by going to the repository settings, in the "GitHub pages" section
+1. (Optional) Use the Jupyter notebooks or python scripts in the `markdown_generator` folder to generate markdown files for publications and talks from a TSV file.
 
-## 🚀 Getting Started
+See more info at https://academicpages.github.io/
 
-### Prerequisites
-- Node.js 18+ (LTS recommended)
-- npm or yarn
+### Additional Tutorials
 
-### Installation
+Additional tutorials for working with the Academic Pages template can be found at the following sites:
+- https://jayrobwilliams.com/posts/2020/06/academic-website/
 
-1. **Install Node.js** from https://nodejs.org/
+## Running locally
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+When you are initially working on your website, it is very useful to be able to preview the changes locally before pushing them to GitHub. To work locally you will need to:
 
-3. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-   This opens http://localhost:5173 in your browser.
+1. Clone the repository and made updates as detailed above.
 
-4. **View the component library:**
-   ```bash
-   npm run storybook
-   ```
-   This opens http://localhost:6006 with Storybook.
+### Using a different IDE
+1. Make sure you have ruby-dev, bundler, and nodejs installed
+    
+    On most Linux distributions and [Windows Subsystem Linux](https://learn.microsoft.com/en-us/windows/wsl/about) the command is:
+    ```bash
+    sudo apt install ruby-dev ruby-bundler nodejs
+    ```
+    If you see error `Unable to locate package ruby-bundler`, `Unable to locate package nodejs `, run the following:
+    ```bash
+    sudo apt update && sudo apt upgrade -y
+    ```
+    then try running `sudo apt install ruby-dev ruby-bundler nodejs` again.
 
-## 📁 Project Structure
+    On MacOS the commands are:
+    ```bash
+    brew install ruby
+    brew install node
+    gem install bundler
+    ```
+1. Run `bundle install` to install ruby dependencies. If you get errors, delete Gemfile.lock and try again.
 
-```
-WEBS/
-├── .claude/
-│   └── memory/              # Persistent project context
-├── .storybook/              # Storybook configuration
-├── src/
-│   ├── components/          # Reusable component library
-│   │   ├── Button/
-│   │   ├── Card/
-│   │   └── Header/
-│   ├── design-tokens/       # Colors, typography, spacing
-│   ├── App.tsx              # Main app component
-│   ├── main.tsx             # Entry point
-│   └── index.css            # Global styles
-├── docs/
-│   ├── DESIGN_SYSTEM.md     # Component API & patterns
-│   ├── BRAND.md             # Brand guidelines
-│   └── ARCHITECTURE.md      # Technical structure
-├── CLAUDE.md                # Project documentation
-└── package.json
-```
+    If you see file permission error like `Fetching bundler-2.6.3.gem ERROR:  While executing gem (Gem::FilePermissionError) You don't have write permissions for the /var/lib/gems/3.2.0 directory.` or `Bundler::PermissionError: There was an error while trying to write to /usr/local/bin.`
+    Install Gems Locally (Recommended):
+    ```bash
+    bundle config set --local path 'vendor/bundle'
+    ```
+    then try run `bundle install` again. If succeeded, you should see a folder called `vendor` and `.bundle`.
 
-## 🎨 Design System
+1. Run `jekyll serve -l -H localhost` to generate the HTML and serve it from `localhost:4000` the local server will automatically rebuild and refresh the pages on change to Markdown (*.md) and HTML files, while changes to the core template and configuration (i.e., `_config.yml`) will require stopping and restarting Jekyll.
+    You may also try `bundle exec jekyll serve -l -H localhost` to ensure jekyll to use specific dependencies on your own local machine.
 
-### Design Tokens
-Located in `src/design-tokens/`, these centralize:
-- **Colors** — Primary, secondary, semantic colors
-- **Typography** — Fonts, sizes, weights, line heights
-- **Spacing** — Consistent 8px scale
-- **Shadows** — Depth & elevation
-- **Border Radius** — Rounded corners
+If you are running on Linux it may be necessary to install some additional dependencies prior to being able to run locally: `sudo apt install build-essential gcc make`
 
-### Components
-All reusable components live in `src/components/`:
-- **Button** — Multiple variants (primary, secondary, outline, ghost)
-- **Card** — Content container with padding & shadow options
-- **Header** — Site header with navigation
-- **Input** — Form inputs with validation
-- **Badge** — Small labels & tags
-- *More coming soon...*
+## Using Docker
 
-Each component includes:
-- TypeScript types
-- Storybook documentation
-- Accessibility features
-- Multiple variants & sizes
+Working from a different OS, or just want to avoid installing dependencies? You can use the provided `Dockerfile` to build a container that will run the site for you if you have [Docker](https://www.docker.com/) installed.
 
-## 🧑‍💻 Development Workflow
-
-### Creating a New Component
-
-1. **Create component folder:**
-   ```
-   src/components/ComponentName/
-   ├── ComponentName.tsx
-   ├── ComponentName.stories.tsx
-   └── README.md
-   ```
-
-2. **Build the component:**
-   ```typescript
-   // src/components/ComponentName/ComponentName.tsx
-   import React from 'react'
-
-   interface ComponentNameProps {
-     // Props here
-   }
-
-   export const ComponentName: React.FC<ComponentNameProps> = (props) => {
-     return <div>{/* Component JSX */}</div>
-   }
-   ```
-
-3. **Document in Storybook:**
-   ```typescript
-   // src/components/ComponentName/ComponentName.stories.tsx
-   import type { Meta, StoryObj } from '@storybook/react'
-   import { ComponentName } from './ComponentName'
-
-   const meta: Meta<typeof ComponentName> = {
-     component: ComponentName,
-     tags: ['autodocs'],
-   }
-
-   export default meta
-   type Story = StoryObj<typeof meta>
-
-   export const Default: Story = {
-     args: { /* default props */ },
-   }
-   ```
-
-4. **Commit your changes:**
-   ```bash
-   git add src/components/ComponentName/
-   git commit -m "feat(components): add ComponentName component"
-   ```
-
-### Git Workflow
+You can build and execute the container by running the following command in the repository:
 
 ```bash
-# Create a feature branch
-git checkout -b feature/component-name
-
-# Make changes and commit
-git add .
-git commit -m "feat(components): add ComponentName"
-
-# Merge back to main
-git checkout main
-git merge feature/component-name
+chmod -R 777 .
+docker compose up
 ```
 
-## 📖 Documentation
+You should now be able to access the website from `localhost:4000`.
 
-Read more in these files:
-- **[CLAUDE.md](./CLAUDE.md)** — Project phases, structure, and development guidelines
-- **[docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)** — Component API, tokens, and guidelines
-- **[docs/BRAND.md](./docs/BRAND.md)** — Brand identity, colors, typography, and voice
-- **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — Technical structure and data flow
+### Using the DevContainer in VS Code
 
-## 📝 Memory System
+If you are using [Visual Studio Code](https://code.visualstudio.com/) you can use the [Dev Container](https://code.visualstudio.com/docs/devcontainers/containers) that comes with this Repository. Normally VS Code detects that a development container configuration is available and asks you if you want to use the container. If this doesn't happen you can manually start the container by **F1->DevContainer: Reopen in Container**. This restarts your VS Code in the container and automatically hosts your academic page locally on http://localhost:4000. All changes will be updated live to that page after a few seconds.
 
-This project uses a persistent memory system in `.claude/memory/`:
-- **MEMORY.md** — Index of all project memories
-- **project_professional_website.md** — Project-specific context and decisions
-- **feedback_*.md** — What works and what doesn't
+# Maintenance
 
-These memories persist across sessions, so Claude Code remembers project context automatically.
+Bug reports and feature requests to the template should be [submitted via GitHub](https://github.com/academicpages/academicpages.github.io/issues/new/choose). For questions concerning how to style the template, please feel free to start a [new discussion on GitHub](https://github.com/academicpages/academicpages.github.io/discussions).
 
-## 🛠 Available Commands
+This repository was forked (then detached) by [Stuart Geiger](https://github.com/staeiou) from the [Minimal Mistakes Jekyll Theme](https://mmistakes.github.io/minimal-mistakes/), which is © 2016 Michael Rose and released under the MIT License (see LICENSE.md). It is currently being maintained by [Robert Zupko](https://github.com/rjzupkoii), and additional maintainers would be welcome.
 
-```bash
-npm run dev              # Start development server (http://localhost:5173)
-npm run build           # Build for production
-npm run preview         # Preview production build
-npm run storybook       # Start Storybook (http://localhost:6006)
-npm run build-storybook # Build Storybook for deployment
-npm run lint            # Run ESLint
-npm run type-check      # Run TypeScript type checking
-```
+## Bugfixes and enhancements
 
-## 🎯 Project Phases
+If you have bugfixes and enhancements that you would like to submit as a pull request, you will need to [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) this repository as opposed to using it as a template. This will also allow you to [synchronize your copy](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) of the template to your fork as well.
 
-### Phase 1: Foundation ✅ (Current)
-- [x] Git repository initialized
-- [x] Project documentation created
-- [x] Design system defined
-- [x] Component structure scaffolded
-- [ ] Node.js dependency installation
-
-### Phase 2: Design System (Next)
-- [ ] Core components built (Button, Card, Header, Footer)
-- [ ] Component variants documented
-- [ ] Storybook fully configured
-- [ ] Accessibility compliance verified
-
-### Phase 3: Website
-- [ ] Homepage design & implementation
-- [ ] Additional pages (Features, Pricing, About, Contact)
-- [ ] Responsive design (mobile, tablet, desktop)
-- [ ] SEO optimization
-
-### Phase 4: Polish & Launch
-- [ ] Performance optimization
-- [ ] Cross-browser testing
-- [ ] Analytics integration
-- [ ] Deployment
-
-## 🎓 Learning Resources
-
-- [React Documentation](https://react.dev)
-- [Vite Guide](https://vitejs.dev)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [Storybook Guide](https://storybook.js.org/docs/react/get-started/introduction)
-- [Web Accessibility Guidelines (WCAG)](https://www.w3.org/WAI/WCAG21/quickref/)
-
-## 💡 Best Practices
-
-1. **Reuse components** — Everything goes in `src/components/` for reuse
-2. **Use design tokens** — No magic numbers, reference design tokens
-3. **Build variants** — Each component should support multiple variants
-4. **Document in Storybook** — Add stories for every component
-5. **Keep it accessible** — ARIA attributes, keyboard navigation, contrast
-6. **Commit frequently** — Small, descriptive commits are easier to review
-7. **Update memory** — Document major decisions in project memory
-
-## 📞 Support
-
-- Read the project documentation in CLAUDE.md
-- Check design system guidelines in docs/DESIGN_SYSTEM.md
-- Review existing component examples in Storybook
-- Check project memory in .claude/memory/ for context
+Unfortunately, one logistical issue with a template theme like Academic Pages that makes it a little tricky to get bug fixes and updates to the core theme. If you use this template and customize it, you will probably get merge conflicts if you attempt to synchronize, although [rebasing](https://git-scm.com/docs/git-rebase) the changes from this template will work along with manually [cherry picking](https://git-scm.com/docs/git-cherry-pick) the relevant commits. If you are not comfortable with the Git command line, you can save your various `.yml` configuration files and Markdown files, delete the repository, and fork it again. 
 
 ---
+<div align="center">
+    
+![pages-build-deployment](https://github.com/academicpages/academicpages.github.io/actions/workflows/pages/pages-build-deployment/badge.svg)
+[![GitHub contributors](https://img.shields.io/github/contributors/academicpages/academicpages.github.io.svg)](https://github.com/academicpages/academicpages.github.io/graphs/contributors)
+[![GitHub release](https://img.shields.io/github/v/release/academicpages/academicpages.github.io)](https://github.com/academicpages/academicpages.github.io/releases/latest)
+[![GitHub license](https://img.shields.io/github/license/academicpages/academicpages.github.io?color=blue)](https://github.com/academicpages/academicpages.github.io/blob/master/LICENSE)
 
-**Built with ❤️ for professional, modern web experiences**
-
-Email: haohanzang@gmail.com
+[![GitHub stars](https://img.shields.io/github/stars/academicpages/academicpages.github.io)](https://github.com/academicpages/academicpages.github.io)
+[![GitHub forks](https://img.shields.io/github/forks/academicpages/academicpages.github.io)](https://github.com/academicpages/academicpages.github.io/fork)
+</div>

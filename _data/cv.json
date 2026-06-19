@@ -1,0 +1,106 @@
+{
+  "basics": {
+    "name": "Haohan Zang",
+    "email": "haohanzang@gmail.com",
+    "phone": "(737) 202-5004",
+    "website": "https://haohanzangAcademicPage.github.io",
+    "summary": "Student researcher, competitive musician, and STEM leader at Cedar Park High School (Class of 2028). Currently conducting agentic AI research at Northwestern University.",
+    "location": {
+      "address": "",
+      "postalCode": "78613",
+      "city": "Cedar Park",
+      "countryCode": "US",
+      "region": "TX"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "username": "haohanzang-ai",
+        "url": "https://github.com/haohanzang-ai"
+      },
+      {
+        "network": "LinkedIn",
+        "username": "haohan-zang",
+        "url": "https://www.linkedin.com/in/haohan-zang-594725321/"
+      }
+    ]
+  },
+  "education": [
+    {
+      "institution": "Cedar Park High School",
+      "area": "Cedar Park, TX",
+      "studyType": "High School",
+      "startDate": "2024",
+      "endDate": "2028",
+      "gpa": "5.260 (weighted) / 4.0 (unweighted)",
+      "courses": [
+        "AP Human Geography (Score: 5)",
+        "AP Chemistry",
+        "AP Pre-Calculus",
+        "AP Computer Science",
+        "AP World History"
+      ]
+    }
+  ],
+  "work": [
+    {
+      "company": "Northwestern University",
+      "position": "Research Mentee — Agentic AI",
+      "website": "https://www.northwestern.edu",
+      "startDate": "2026-06-01",
+      "endDate": "",
+      "summary": "Conducting agentic AI research under Prof. Naichen Shi (Industrial Engineering & Mechanical Engineering). Designing experiments, collecting data, and co-authoring a research publication.",
+      "highlights": []
+    },
+    {
+      "company": "University of Texas at Austin",
+      "position": "UT High School Research Academy — X-Plants Project",
+      "website": "https://www.utexas.edu",
+      "startDate": "2026-01-01",
+      "endDate": "2026-06-01",
+      "summary": "5-week intensive research endorsement in plant biology.",
+      "highlights": []
+    },
+    {
+      "company": "University of Michigan, Ann Arbor",
+      "position": "miRcore Computational Biology Camp",
+      "website": "https://www.umich.edu",
+      "startDate": "2025-06-01",
+      "endDate": "2025-08-01",
+      "summary": "Conducted computational analysis of gene expression data. Explored mechanisms of gene regulation, replication, and isolation using bioinformatics tools.",
+      "highlights": []
+    }
+  ],
+  "skills": [
+    { "name": "Biology & Life Sciences", "level": "", "keywords": ["Molecular biology", "Bioinformatics", "Gene expression analysis", "Computational biology"] },
+    { "name": "Computer Science", "level": "", "keywords": ["Python", "JavaScript", "TypeScript", "React", "HTML/CSS", "Git"] },
+    { "name": "Music", "level": "", "keywords": ["Clarinet (principal)", "Violin (orchestral)"] },
+    { "name": "Languages", "level": "", "keywords": ["English (native)", "Chinese (fluent)"] }
+  ],
+  "references": [
+    { "name": "Prof. Naichen Shi, Northwestern University", "reference": "naichen.shi@northwestern.edu" },
+    { "name": "Allison Trueblood, Science Department Head, Cedar Park High School", "reference": "Allison.Trueblood@leanderisd.org" },
+    { "name": "Christopher Yee, Head Band Director, Cedar Park High School", "reference": "Christopher.Yee@leanderisd.org" },
+    { "name": "Dr. Dawn Marie Lindblade-Evans DMA, Professor of Clarinet, University of Central Oklahoma", "reference": "" },
+    { "name": "Mike Lebiras, AYWE Director / Assistant Director of Bands, UT Austin", "reference": "mlebrias@utexas.edu" }
+  ],
+  "publications": [],
+  "presentations": [],
+  "teaching": [],
+  "portfolio": [
+    {
+      "name": "Professional Website Platform (WEBS)",
+      "category": "portfolio",
+      "date": "2026",
+      "url": "https://github.com/haohanzang-ai",
+      "description": "Design-system-first web platform built with React, TypeScript, Vite, Tailwind CSS, and Storybook. Features a reusable component library with centralized design tokens."
+    },
+    {
+      "name": "Weather Channel Web App",
+      "category": "portfolio",
+      "date": "2025",
+      "url": "",
+      "description": "Weather comparison app built with vanilla JavaScript. Features real-time data fetching, side-by-side weather comparison, and energy efficiency analysis."
+    }
+  ]
+}

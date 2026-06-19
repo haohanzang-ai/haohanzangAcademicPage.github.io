@@ -1,39 +1,23 @@
-# Dependencies
-node_modules/
-/.pnp
-.pnp.js
+# Ignore the contents of the _site directory and other cache directories
+_site/
+.sass-cache/
 
-# Production
-/build
-/dist
+# Ignore the directory for local files during development
+local/
 
-# Misc
-.DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Ignore the Gemfile that is generated
+Gemfile.lock
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Ignore files created by npm
+node_modules
+package-lock.json
 
-# Editor
+# Ignore the vendor file at root level and bundle for alternative installation
+/vendor/
+.bundle/
+
+# Ignore folders related to IDEs
 .vscode/
-.idea/
-*.swp
-*.swo
-*~
 
-# OS
-Thumbs.db
-
-# Storybook
-storybook-static/
-
-# Cache
-.eslintcache
+# Ignore files created by MacOS
+.DS_Store

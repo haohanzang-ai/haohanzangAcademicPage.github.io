@@ -1,34 +1,41 @@
 {
-  "name": "professional-website",
-  "version": "1.0.0",
-  "description": "A professional, modern, and attractive website with design system and component library",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "lint": "eslint src --ext ts,tsx",
-    "type-check": "tsc --noEmit"
+  "name": "academic-pages",
+  "version": "0.8.1.1",
+  "description": "Academic Pages Mistakes Jekyll theme npm build scripts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/academicpages/academicpages.github.io"
+  },
+  "keywords": [
+    "jekyll",
+    "theme",
+    "minimal"
+  ],
+  "contributors": [
+    "Michael Rose",
+    "Robert Zupko"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/academicpages/academicpages.github.io/issues"
+  },
+  "homepage": "https://github.com/academicpages/academicpages.github.io",
+  "engines": {
+    "node": ">= 0.10.0"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "fitvids": "^2.1.1",
+    "jquery": "^3.7.1",
+    "jquery-smooth-scroll": "^2.2.0",
+    "plotly.js-dist-min": "^3.3.0"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^7.0.0",
-    "@storybook/addon-interactions": "^7.0.0",
-    "@storybook/react": "^7.0.0",
-    "@storybook/react-vite": "^7.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.0.0",
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.24",
-    "storybook": "^7.0.0",
-    "tailwindcss": "^3.3.2",
-    "typescript": "^5.0.0",
-    "vite": "^4.3.0"
+    "onchange": "^7.1.0",
+    "uglify-js": "^3.17.4"
+  },
+  "scripts": {
+    "uglify": "uglifyjs node_modules/jquery/dist/jquery.min.js node_modules/fitvids/dist/fitvids.min.js node_modules/jquery-smooth-scroll/jquery.smooth-scroll.min.js node_modules/plotly.js-dist-min/plotly.min.js assets/js/plugins/jquery.greedy-navigation.js assets/js/_main.js -c -m -o assets/js/main.min.js",
+    "watch:js": "onchange \"assets/js/**/*.js\" -e \"assets/js/main.min.js\" -- npm run build:js",
+    "build:js": "npm run uglify"
   }
 }
