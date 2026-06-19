@@ -1,5 +1,10 @@
-# Academic Pages
-**Academic Pages is a GitHub Pages template for personal and professional portfolio-oriented websites.**
+# Haohan Zang — Academic Portfolio
+
+**Live site: [https://haohanzang-ai.github.io/haohanzangAcademicPage.github.io/](https://haohanzang-ai.github.io/haohanzangAcademicPage.github.io/)**
+
+---
+
+*Built on the Academic Pages template for GitHub Pages.*
 
 ![Academic Pages template example](images/themes/homepage-light.png "Academic Pages template example")
 
