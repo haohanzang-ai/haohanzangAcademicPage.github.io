@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "3000", "--directory", "Weather-Channel"],
       "port": 3000
+    },
+    {
+      "name": "AcademicPage",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "3001", "--directory", "docs"],
+      "port": 3001
     }
   ]
 }

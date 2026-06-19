@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Haohan Zang — Academic Portfolio</title>
+  <meta name="description" content="Academic portfolio of Haohan Zang — student researcher, musician, and STEM leader at Cedar Park High School." />
+
+  <!-- Tailwind CSS via CDN (no npm needed) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    // Tailwind custom config (mirrors the WEBS design tokens)
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            primary: {
+              50:  '#EFF6FF',
+              100: '#DBEAFE',
+              200: '#BFDBFE',
+              500: '#3B82F6',
+              600: '#2563EB',
+              700: '#1D4ED8',
+              800: '#1E40AF',
+              900: '#1E3A8A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    *:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; border-radius: 4px; }
+
+    /* Fade-in on scroll */
+    .fade-in { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* Section heading underline */
+    .section-heading {
+      display: inline-block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid #2563EB;
+      margin-bottom: 2.5rem;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 antialiased">
+
+  <!-- ===== STICKY NAV ===== -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#hero" id="nav-name" class="font-bold text-lg text-white transition-colors">Haohan Zang</a>
+
+      <ul class="hidden md:flex gap-6 text-sm font-medium">
+        <li><a href="#research"  class="nav-link text-primary-100 hover:text-white transition-colors">Research</a></li>
+        <li><a href="#education" class="nav-link text-primary-100 hover:text-white transition-colors">Education</a></li>
+        <li><a href="#leadership" class="nav-link text-primary-100 hover:text-white transition-colors">Leadership</a></li>
+        <li><a href="#music"    class="nav-link text-primary-100 hover:text-white transition-colors">Music</a></li>
+        <li><a href="#awards"   class="nav-link text-primary-100 hover:text-white transition-colors">Awards</a></li>
+        <li><a href="#projects" class="nav-link text-primary-100 hover:text-white transition-colors">Projects</a></li>
+        <li><a href="#service"  class="nav-link text-primary-100 hover:text-white transition-colors">Service</a></li>
+      </ul>
+
+      <a href="mailto:haohanzang@gmail.com"
+         id="nav-cta"
+         class="hidden md:inline-block text-sm font-semibold px-4 py-2 rounded-lg bg-white/15 text-white hover:bg-white/25 transition-colors">
+        Contact
+      </a>
+    </div>
+  </nav>
+
+
+  <!-- ===== HERO ===== -->
+  <section id="hero" class="bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 text-white pt-32 pb-24 px-6">
+    <div class="max-w-5xl mx-auto">
+
+      <div class="inline-block bg-white/10 text-primary-100 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-6">
+        Cedar Park High School &nbsp;·&nbsp; Class of 2028
+      </div>
+
+      <h1 class="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">Haohan Zang</h1>
+      <p class="text-primary-200 text-xl mb-2 font-light">Student Researcher &nbsp;·&nbsp; Competitive Musician &nbsp;·&nbsp; STEM Leader</p>
+      <p class="text-primary-300 text-sm mb-10">
+        Weighted GPA: 5.260 &nbsp;·&nbsp; Unweighted GPA: 4.0 &nbsp;·&nbsp; Top 5.8% of Class
+      </p>
+
+      <!-- Quick stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        <div class="bg-white/10 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold">2×</div>
+          <div class="text-primary-200 text-xs mt-1">International Awards</div>
+        </div>
+        <div class="bg-white/10 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold">9×</div>
+          <div class="text-primary-200 text-xs mt-1">5A State Band Champion</div>
+        </div>
+        <div class="bg-white/10 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold">100+</div>
+          <div class="text-primary-200 text-xs mt-1">Service Hours</div>
+        </div>
+        <div class="bg-white/10 rounded-xl p-4 text-center">
+          <div class="text-3xl font-bold">20+</div>
+          <div class="text-primary-200 text-xs mt-1">Students Tutored</div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <a href="mailto:haohanzang@gmail.com"
+           class="bg-white text-primary-900 font-semibold px-5 py-2.5 rounded-lg hover:bg-primary-50 transition-colors text-sm">
+          haohanzang@gmail.com
+        </a>
+        <span class="bg-white/10 text-primary-100 px-5 py-2.5 rounded-lg text-sm">
+          Cedar Park, TX &nbsp;·&nbsp; (737) 202-5004
+        </span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== RESEARCH ===== -->
+  <section id="research" class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">Research &amp; Academic Experience</h2>
+
+      <div class="space-y-5">
+
+        <!-- Card -->
+        <div class="fade-in bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div class="flex flex-col md:flex-row md:justify-between gap-2 mb-2">
+            <h3 class="text-lg font-semibold">Agentic AI Research Mentorship</h3>
+            <span class="text-sm text-gray-400 whitespace-nowrap">Summer 2026</span>
+          </div>
+          <p class="text-primary-600 font-medium text-sm mb-3">Northwestern University</p>
+          <p class="text-gray-600 text-sm leading-relaxed mb-4">
+            Conducting AI research under Prof. Naichen Shi (Industrial Engineering &amp; Mechanical Engineering).
+            Responsibilities include designing experiments, collecting and analyzing data, and co-authoring a
+            research paper for publication.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Artificial Intelligence</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Research Design</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Data Analysis</span>
+          </div>
+        </div>
+
+        <div class="fade-in bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div class="flex flex-col md:flex-row md:justify-between gap-2 mb-2">
+            <h3 class="text-lg font-semibold">UT High School Research Academy — X-Plants Project</h3>
+            <span class="text-sm text-gray-400 whitespace-nowrap">2026</span>
+          </div>
+          <p class="text-primary-600 font-medium text-sm mb-3">University of Texas at Austin</p>
+          <p class="text-gray-600 text-sm leading-relaxed mb-4">
+            Completed a 5-week intensive research endorsement program. Conducted an independent research
+            project in plant biology, earning a formal university-level research endorsement.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Plant Biology</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Independent Research</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">5-Week Endorsement</span>
+          </div>
+        </div>
+
+        <div class="fade-in bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div class="flex flex-col md:flex-row md:justify-between gap-2 mb-2">
+            <h3 class="text-lg font-semibold">miRcore Computational Biology Camp</h3>
+            <span class="text-sm text-gray-400 whitespace-nowrap">2025</span>
+          </div>
+          <p class="text-primary-600 font-medium text-sm mb-3">University of Michigan, Ann Arbor</p>
+          <p class="text-gray-600 text-sm leading-relaxed mb-4">
+            Conducted computational analysis of gene expression data in a collaborative research setting.
+            Explored mechanisms of gene regulation, replication, and isolation using bioinformatics tools.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Bioinformatics</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Gene Expression</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Computational Biology</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== EDUCATION ===== -->
+  <section id="education" class="py-20 px-6 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">Education</h2>
+
+      <div class="fade-in bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+        <div class="flex flex-col md:flex-row md:justify-between gap-2 mb-6">
+          <div>
+            <h3 class="text-xl font-bold">Cedar Park High School</h3>
+            <p class="text-gray-500 text-sm mt-0.5">Cedar Park, TX &nbsp;·&nbsp; Expected Graduation: May 2028</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-8">
+          <div class="text-center p-4 bg-primary-50 rounded-xl">
+            <div class="text-2xl font-bold text-primary-700">5.260</div>
+            <div class="text-xs text-gray-500 mt-1">Weighted GPA</div>
+          </div>
+          <div class="text-center p-4 bg-primary-50 rounded-xl">
+            <div class="text-2xl font-bold text-primary-700">4.0</div>
+            <div class="text-xs text-gray-500 mt-1">Unweighted GPA</div>
+          </div>
+          <div class="text-center p-4 bg-primary-50 rounded-xl">
+            <div class="text-2xl font-bold text-primary-700">Top 5.8%</div>
+            <div class="text-xs text-gray-500 mt-1">Class Rank</div>
+          </div>
+        </div>
+
+        <p class="text-sm font-semibold text-gray-700 mb-3">AP Coursework</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">AP Human Geography (Score: 5)</span>
+          <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">AP Chemistry</span>
+          <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">AP Pre-Calculus</span>
+          <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">AP Computer Science</span>
+          <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">AP World History</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== LEADERSHIP ===== -->
+  <section id="leadership" class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">Leadership Experience</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-semibold text-base">Drum Major</h3>
+            <span class="text-xs text-gray-400 ml-3 whitespace-nowrap">2026–2027</span>
+          </div>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">Cedar Park High School Band</p>
+          <p class="text-gray-600 text-sm leading-relaxed">9× Consecutive 5A State Champion. Sudler Shield Award Winner — the highest honor in marching band excellence.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-semibold text-base">President &amp; Co-Founder</h3>
+            <span class="text-xs text-gray-400 ml-3 whitespace-nowrap">2025–Present</span>
+          </div>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">Chinese Club</p>
+          <p class="text-gray-600 text-sm leading-relaxed">Founded and leads the school's Chinese culture and language organization, growing membership and programming.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-semibold text-base">Junior Team Captain</h3>
+            <span class="text-xs text-gray-400 ml-3 whitespace-nowrap">2026–2027</span>
+          </div>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">UIL Science</p>
+          <p class="text-gray-600 text-sm leading-relaxed">8th individually in district competition. Led team to 3rd place across biology, chemistry, and physics combined.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-semibold text-base">Chapter Secretary</h3>
+            <span class="text-xs text-gray-400 ml-3 whitespace-nowrap">2026–2027</span>
+          </div>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">National Technical Honor Society</p>
+          <p class="text-gray-600 text-sm leading-relaxed">Elected secretary supporting STEM recognition programs and academic excellence initiatives.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-semibold text-base">Chapter Secretary</h3>
+            <span class="text-xs text-gray-400 ml-3 whitespace-nowrap">2026–2027</span>
+          </div>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">Mu Alpha Theta / National Math Honor Society</p>
+          <p class="text-gray-600 text-sm leading-relaxed">Elected secretary supporting math competitions, tutoring initiatives, and honor society programming.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-semibold text-base">Business &amp; Outreach Promoter</h3>
+            <span class="text-xs text-gray-400 ml-3 whitespace-nowrap">2025–2026</span>
+          </div>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">FTC/FRC Robotics Team</p>
+          <p class="text-gray-600 text-sm leading-relaxed">2× Consecutive 5A State Champion. Handled sponsorship outreach, community partnerships, and team promotion.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== MUSIC ===== -->
+  <section id="music" class="py-20 px-6 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">Music</h2>
+      <p class="fade-in text-gray-600 mb-8 max-w-2xl leading-relaxed">
+        Accomplished performer on clarinet and violin, competing and performing at district, state,
+        national, and international levels across orchestral, wind ensemble, and pit orchestra settings.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        <!-- Highlighted entry -->
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-primary-50 border border-primary-200">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold text-primary-800">1st Prize Winner</p>
+            <p class="text-xs text-gray-600">International Clarinet Association Junior Bb Clareidoscope Competition</p>
+            <p class="text-xs text-gray-400 mt-0.5">2024–2025</p>
+          </div>
+        </div>
+
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold">Principal Clarinetist</p>
+            <p class="text-xs text-gray-600">Austin Youth Wind Ensemble</p>
+            <p class="text-xs text-gray-400 mt-0.5">2025–2026</p>
+          </div>
+        </div>
+
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold">First Violin</p>
+            <p class="text-xs text-gray-600">Austin Youth Symphony Orchestra</p>
+            <p class="text-xs text-gray-400 mt-0.5">2024–Present</p>
+          </div>
+        </div>
+
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold">Finalist — 12 of 300+ Participants</p>
+            <p class="text-xs text-gray-600">Cedar Park Young Artist Competition</p>
+            <p class="text-xs text-gray-400 mt-0.5">2024–2026</p>
+          </div>
+        </div>
+
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold">TMEA Region Band &amp; Area Qualifier</p>
+            <p class="text-xs text-gray-600">Clarinet</p>
+            <p class="text-xs text-gray-400 mt-0.5">2024–2026</p>
+          </div>
+        </div>
+
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold">TMEA Region Orchestra &amp; Area Qualifier</p>
+            <p class="text-xs text-gray-600">Violin</p>
+            <p class="text-xs text-gray-400 mt-0.5">2024–2026</p>
+          </div>
+        </div>
+
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold">Heller Award Nominee — Best Pit Orchestra</p>
+            <p class="text-xs text-gray-600">"Titanic" &amp; "Pippin" &nbsp;·&nbsp; Concertmaster</p>
+            <p class="text-xs text-gray-400 mt-0.5">2024–2026</p>
+          </div>
+        </div>
+
+        <div class="fade-in flex gap-3 p-4 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></div>
+          <div>
+            <p class="text-sm font-semibold">Principal Clarinetist</p>
+            <p class="text-xs text-gray-600">Cedar Park High School Honor Band</p>
+            <p class="text-xs text-gray-400 mt-0.5">2025–Present</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== AWARDS ===== -->
+  <section id="awards" class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">Academic Awards &amp; Competitions</h2>
+
+      <div class="space-y-3">
+
+        <div class="fade-in flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+          <span class="flex-shrink-0 bg-yellow-50 text-yellow-800 border border-yellow-200 text-xs font-semibold px-3 py-1.5 rounded-full">Gold Medal</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">British Biology Olympiad (UKBC)</p>
+            <p class="text-xs text-gray-500 mt-0.5">Ranked in the top 5% internationally in an advanced biology competition.</p>
+          </div>
+          <span class="text-xs text-gray-400 whitespace-nowrap">2026</span>
+        </div>
+
+        <div class="fade-in flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+          <span class="flex-shrink-0 bg-yellow-50 text-yellow-800 border border-yellow-200 text-xs font-semibold px-3 py-1.5 rounded-full">Honorable Mention</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">USA Biology Olympiad — Center of Excellence</p>
+            <p class="text-xs text-gray-500 mt-0.5">Placed in the top 20% among 12,000+ participants nationwide.</p>
+          </div>
+          <span class="text-xs text-gray-400 whitespace-nowrap">2026</span>
+        </div>
+
+        <div class="fade-in flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+          <span class="flex-shrink-0 bg-yellow-50 text-yellow-800 border border-yellow-200 text-xs font-semibold px-3 py-1.5 rounded-full">Gold Medal</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">British Biology Challenge (UKBC)</p>
+          </div>
+          <span class="text-xs text-gray-400 whitespace-nowrap">2025</span>
+        </div>
+
+        <div class="fade-in flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+          <span class="flex-shrink-0 bg-gray-100 text-gray-700 border border-gray-200 text-xs font-semibold px-3 py-1.5 rounded-full">Regional Competitor</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold">HOSA Biotechnology</p>
+            <p class="text-xs text-gray-500 mt-0.5">Competed in health science and biotechnology at the regional level.</p>
+          </div>
+          <span class="text-xs text-gray-400 whitespace-nowrap">2024–2026</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects" class="py-20 px-6 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">Projects</h2>
+
+      <div class="space-y-6">
+
+        <!-- WEBS -->
+        <div class="fade-in bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div class="flex flex-col md:flex-row md:justify-between gap-2 mb-4">
+            <div>
+              <h3 class="text-lg font-bold">Professional Website Platform (WEBS)</h3>
+              <p class="text-primary-600 text-sm font-medium mt-0.5">Personal Engineering Project</p>
+            </div>
+            <span class="text-sm text-gray-400 whitespace-nowrap">2026 – Present</span>
+          </div>
+
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Mission</p>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5">
+            A design-system-first web platform built to demonstrate modern front-end engineering practices.
+            The mission is to produce a professional, scalable website that evolves through a structured
+            component library, centralized design tokens, and version-controlled design decisions —
+            giving each interface element a single source of truth.
+          </p>
+
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Capabilities</p>
+          <ul class="text-gray-600 text-sm space-y-1.5 mb-5">
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Component library with reusable, accessible UI primitives (Button, Card, Header) and variant APIs</li>
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Design tokens centralized in TypeScript for colors, typography, spacing, and shadows</li>
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Storybook integration for interactive component documentation and visual testing</li>
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> React + Vite build pipeline with TypeScript for type-safe, fast development</li>
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Tailwind CSS utility layer wired to design tokens for consistent, maintainable styling</li>
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Git-tracked design history with feature-branch workflow and descriptive commits</li>
+          </ul>
+
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">React</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">TypeScript</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Vite</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Tailwind CSS</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Storybook</span>
+            <span class="bg-primary-50 text-primary-700 text-xs font-medium px-3 py-1 rounded-full">Design Systems</span>
+          </div>
+        </div>
+
+        <!-- Weather Channel -->
+        <div class="fade-in bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div class="flex flex-col md:flex-row md:justify-between gap-2 mb-4">
+            <div>
+              <h3 class="text-lg font-bold">Weather Channel Web App</h3>
+              <p class="text-primary-600 text-sm font-medium mt-0.5">Personal Engineering Project</p>
+            </div>
+            <span class="text-sm text-gray-400 whitespace-nowrap">2025–2026</span>
+          </div>
+
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Mission</p>
+          <p class="text-gray-600 text-sm leading-relaxed mb-5">
+            A weather comparison web application built from scratch with vanilla JavaScript. The goal
+            was to explore real-world API integration, dynamic data rendering, and custom UI design
+            without relying on frameworks — strengthening core web fundamentals.
+          </p>
+
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Capabilities</p>
+          <ul class="text-gray-600 text-sm space-y-1.5 mb-5">
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Fetches and displays real-time meteorological data with dynamic rendering</li>
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Side-by-side weather comparison view with fuel/energy efficiency analysis</li>
+            <li class="flex gap-2"><span class="text-primary-500 flex-shrink-0">▸</span> Custom CSS styling with responsive layout and data visualization components</li>
+          </ul>
+
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full">JavaScript</span>
+            <span class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full">CSS</span>
+            <span class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full">Web APIs</span>
+            <span class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full">Data Visualization</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== COMMUNITY SERVICE ===== -->
+  <section id="service" class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">Community Service</h2>
+
+      <div class="fade-in flex items-center gap-4 mb-8 p-5 bg-primary-50 rounded-xl border border-primary-100">
+        <div class="text-4xl font-bold text-primary-700">100+</div>
+        <div>
+          <div class="font-semibold">Hours of Community Service</div>
+          <div class="text-sm text-gray-500">2025 – Present</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <h3 class="font-semibold text-sm mb-0.5">Big Future Ambassador</h3>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">The College Board</p>
+          <p class="text-gray-600 text-sm leading-relaxed">Promotes college access and awareness, helping students navigate the application process and scholarship opportunities.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <h3 class="font-semibold text-sm mb-0.5">STEM Tutor</h3>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">Independent</p>
+          <p class="text-gray-600 text-sm leading-relaxed">Tutored 20+ students in advanced mathematics and science, improving academic understanding and standardized test performance.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <h3 class="font-semibold text-sm mb-0.5">Community Outreach Volunteer</h3>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">Central Texas Food Bank</p>
+          <p class="text-gray-600 text-sm leading-relaxed">Organized and distributed food to support local families experiencing food insecurity in the Central Texas region.</p>
+        </div>
+
+        <div class="fade-in bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <h3 class="font-semibold text-sm mb-0.5">Musical Outreach Performer</h3>
+          <p class="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-2">Local Nursing Homes</p>
+          <p class="text-gray-600 text-sm leading-relaxed">Performs classical music at nursing homes to support resident engagement, emotional well-being, and connection to the arts.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== REFERENCES ===== -->
+  <section class="py-16 px-6 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="section-heading fade-in">References</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="fade-in p-4 rounded-xl border border-gray-100 bg-gray-50">
+          <p class="font-semibold text-sm">Naichen Shi</p>
+          <p class="text-xs text-gray-600 mt-0.5">Assistant Professor, Industrial Engineering &amp; Mechanical Engineering</p>
+          <p class="text-xs text-primary-600 font-medium mt-0.5">Northwestern University</p>
+          <a href="mailto:naichen.shi@northwestern.edu" class="text-xs text-gray-400 hover:text-primary-600 transition-colors mt-1 inline-block">naichen.shi@northwestern.edu</a>
+        </div>
+
+        <div class="fade-in p-4 rounded-xl border border-gray-100 bg-gray-50">
+          <p class="font-semibold text-sm">Allison Trueblood</p>
+          <p class="text-xs text-gray-600 mt-0.5">Science Department Head</p>
+          <p class="text-xs text-primary-600 font-medium mt-0.5">Cedar Park High School</p>
+          <a href="mailto:Allison.Trueblood@leanderisd.org" class="text-xs text-gray-400 hover:text-primary-600 transition-colors mt-1 inline-block">Allison.Trueblood@leanderisd.org</a>
+        </div>
+
+        <div class="fade-in p-4 rounded-xl border border-gray-100 bg-gray-50">
+          <p class="font-semibold text-sm">Christopher Yee</p>
+          <p class="text-xs text-gray-600 mt-0.5">Head Band Director</p>
+          <p class="text-xs text-primary-600 font-medium mt-0.5">Cedar Park High School</p>
+          <a href="mailto:Christopher.Yee@leanderisd.org" class="text-xs text-gray-400 hover:text-primary-600 transition-colors mt-1 inline-block">Christopher.Yee@leanderisd.org</a>
+        </div>
+
+        <div class="fade-in p-4 rounded-xl border border-gray-100 bg-gray-50">
+          <p class="font-semibold text-sm">Dawn Marie Lindblade-Evans, DMA</p>
+          <p class="text-xs text-gray-600 mt-0.5">Assistant Director, School of Music &nbsp;·&nbsp; Professor of Clarinet</p>
+          <p class="text-xs text-primary-600 font-medium mt-0.5">University of Central Oklahoma</p>
+        </div>
+
+        <div class="fade-in p-4 rounded-xl border border-gray-100 bg-gray-50">
+          <p class="font-semibold text-sm">Mike Lebiras</p>
+          <p class="text-xs text-gray-600 mt-0.5">Director, Austin Youth Wind Ensemble &nbsp;·&nbsp; Assistant Director of Bands</p>
+          <p class="text-xs text-primary-600 font-medium mt-0.5">University of Texas at Austin</p>
+          <a href="mailto:mlebrias@utexas.edu" class="text-xs text-gray-400 hover:text-primary-600 transition-colors mt-1 inline-block">mlebrias@utexas.edu</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== CONTACT ===== -->
+  <section id="contact" class="bg-gradient-to-br from-primary-900 to-primary-800 text-white py-20 px-6">
+    <div class="max-w-5xl mx-auto text-center">
+      <h2 class="text-3xl font-bold mb-4">Get in Touch</h2>
+      <p class="text-primary-200 mb-10 max-w-md mx-auto leading-relaxed">
+        Open to research opportunities, academic collaborations, music connections, and STEM mentorship.
+      </p>
+      <a href="mailto:haohanzang@gmail.com"
+         class="inline-block bg-white text-primary-900 font-bold px-8 py-3.5 rounded-xl hover:bg-primary-50 transition-colors text-lg mb-6">
+        haohanzang@gmail.com
+      </a>
+      <p class="text-primary-300 text-sm">Cedar Park, TX &nbsp;·&nbsp; (737) 202-5004</p>
+
+      <div class="mt-16 pt-8 border-t border-white/10 text-primary-400 text-xs">
+        © 2026 Haohan Zang &nbsp;·&nbsp; Built with HTML &amp; Tailwind CSS
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== SCRIPTS ===== -->
+  <script>
+    // Nav scroll behavior
+    const navbar  = document.getElementById('navbar');
+    const navName = document.getElementById('nav-name');
+    const navCta  = document.getElementById('nav-cta');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY > 60;
+
+      if (scrolled) {
+        navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-sm', 'border-b', 'border-gray-100');
+        navbar.classList.remove('bg-transparent');
+        navName.classList.replace('text-white', 'text-gray-900');
+        navCta.classList.remove('bg-white/15', 'text-white', 'hover:bg-white/25');
+        navCta.classList.add('bg-primary-600', 'text-white', 'hover:bg-primary-700');
+        navLinks.forEach(l => {
+          l.classList.replace('text-primary-100', 'text-gray-700');
+          l.classList.replace('hover:text-white', 'hover:text-primary-600');
+        });
+      } else {
+        navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-sm', 'border-b', 'border-gray-100');
+        navbar.classList.add('bg-transparent');
+        navName.classList.replace('text-gray-900', 'text-white');
+        navCta.classList.add('bg-white/15', 'text-white', 'hover:bg-white/25');
+        navCta.classList.remove('bg-primary-600', 'hover:bg-primary-700');
+        navLinks.forEach(l => {
+          l.classList.replace('text-gray-700', 'text-primary-100');
+          l.classList.replace('hover:text-primary-600', 'hover:text-white');
+        });
+      }
+    });
+
+    // Fade-in on scroll using IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
