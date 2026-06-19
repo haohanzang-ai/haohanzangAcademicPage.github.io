@@ -15,114 +15,101 @@
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
     overflow: hidden;
+    user-select: none;
   }
-  canvas {
-    display: block;
-    cursor: pointer;
+  canvas { display: block; cursor: pointer; }
+  #rec-badge {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,23,68,0.18);
+    border: 1.5px solid #ff1744;
+    border-radius: 20px;
+    padding: 4px 10px;
+    color: #ff1744;
+    font: 700 12px/1 Inter, sans-serif;
+    letter-spacing: 0.06em;
+    z-index: 999;
+    pointer-events: none;
   }
+  #rec-badge.on { display: flex; }
+  #rec-dot {
+    width: 8px; height: 8px;
+    background: #ff1744;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 </style>
 </head>
 <body>
+<div id="rec-badge"><div id="rec-dot"></div> REC</div>
 <canvas id="game"></canvas>
 <script>
 // =============================================================================
-// SECTION 1: CONSTANTS AND CONFIG
+// SECTION 1: CONSTANTS & CONFIG
 // =============================================================================
-const COLS = 10;
-const ROWS = 20;
-const CELL = 30;
-const LEFT_PANEL = 140;
-const RIGHT_PANEL = 150;
-const PADDING = 20;
+const COLS = 10, ROWS = 20, CELL = 30;
+const LEFT_PANEL = 150, RIGHT_PANEL = 155, PADDING = 20;
 const CANVAS_W = LEFT_PANEL + COLS * CELL + RIGHT_PANEL + PADDING * 2;
 const CANVAS_H = ROWS * CELL + PADDING * 2 + 60;
 
-const COLORS = {
-  I: '#00f5ff',
-  O: '#ffe600',
-  T: '#bf5fff',
-  S: '#00e676',
-  Z: '#ff1744',
-  J: '#2979ff',
-  L: '#ff9100',
-};
+const COLORS = { I:'#00f5ff', O:'#ffe600', T:'#bf5fff', S:'#00e676', Z:'#ff1744', J:'#2979ff', L:'#ff9100' };
+const BG = '#0b0f18', BOARD_BG = '#111827', GRID_LINE = 'rgba(255,255,255,0.05)';
+const LOCK_DELAY = 500, COLLAPSE_PULSE = 150;
 
-const BG        = '#0b0f18';
-const BOARD_BG  = '#111827';
-const GRID_LINE = 'rgba(255,255,255,0.05)';
-
-const LOCK_DELAY     = 500;
-const FLASH_FRAMES   = 2;
-const FLOAT_LIFE     = 800;
-const COLLAPSE_PULSE = 150;
+const BOARD_X = PADDING + LEFT_PANEL;
+const BOARD_Y = PADDING + 30;
 
 // =============================================================================
-// SECTION 2: PIECE DEFINITIONS (all 7 tetrominoes, all 4 rotations)
+// SECTION 2: TETROMINO DEFINITIONS
 // =============================================================================
 const PIECES = {
-  I: {
-    color: COLORS.I,
-    rotations: [
-      [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-      [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
-      [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
-      [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]],
-    ],
-  },
-  O: {
-    color: COLORS.O,
-    rotations: [
-      [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
-      [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
-      [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
-      [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
-    ],
-  },
-  T: {
-    color: COLORS.T,
-    rotations: [
-      [[0,1,0],[1,1,1],[0,0,0]],
-      [[0,1,0],[0,1,1],[0,1,0]],
-      [[0,0,0],[1,1,1],[0,1,0]],
-      [[0,1,0],[1,1,0],[0,1,0]],
-    ],
-  },
-  S: {
-    color: COLORS.S,
-    rotations: [
-      [[0,1,1],[1,1,0],[0,0,0]],
-      [[0,1,0],[0,1,1],[0,0,1]],
-      [[0,0,0],[0,1,1],[1,1,0]],
-      [[1,0,0],[1,1,0],[0,1,0]],
-    ],
-  },
-  Z: {
-    color: COLORS.Z,
-    rotations: [
-      [[1,1,0],[0,1,1],[0,0,0]],
-      [[0,0,1],[0,1,1],[0,1,0]],
-      [[0,0,0],[1,1,0],[0,1,1]],
-      [[0,1,0],[1,1,0],[1,0,0]],
-    ],
-  },
-  J: {
-    color: COLORS.J,
-    rotations: [
-      [[1,0,0],[1,1,1],[0,0,0]],
-      [[0,1,1],[0,1,0],[0,1,0]],
-      [[0,0,0],[1,1,1],[0,0,1]],
-      [[0,1,0],[0,1,0],[1,1,0]],
-    ],
-  },
-  L: {
-    color: COLORS.L,
-    rotations: [
-      [[0,0,1],[1,1,1],[0,0,0]],
-      [[0,1,0],[0,1,0],[0,1,1]],
-      [[0,0,0],[1,1,1],[1,0,0]],
-      [[1,1,0],[0,1,0],[0,1,0]],
-    ],
-  },
+  I:{ color:COLORS.I, rotations:[
+    [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+    [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
+    [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
+    [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]],
+  ]},
+  O:{ color:COLORS.O, rotations:[
+    [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
+    [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
+    [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
+    [[0,1,1,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]],
+  ]},
+  T:{ color:COLORS.T, rotations:[
+    [[0,1,0],[1,1,1],[0,0,0]],
+    [[0,1,0],[0,1,1],[0,1,0]],
+    [[0,0,0],[1,1,1],[0,1,0]],
+    [[0,1,0],[1,1,0],[0,1,0]],
+  ]},
+  S:{ color:COLORS.S, rotations:[
+    [[0,1,1],[1,1,0],[0,0,0]],
+    [[0,1,0],[0,1,1],[0,0,1]],
+    [[0,0,0],[0,1,1],[1,1,0]],
+    [[1,0,0],[1,1,0],[0,1,0]],
+  ]},
+  Z:{ color:COLORS.Z, rotations:[
+    [[1,1,0],[0,1,1],[0,0,0]],
+    [[0,0,1],[0,1,1],[0,1,0]],
+    [[0,0,0],[1,1,0],[0,1,1]],
+    [[0,1,0],[1,1,0],[1,0,0]],
+  ]},
+  J:{ color:COLORS.J, rotations:[
+    [[1,0,0],[1,1,1],[0,0,0]],
+    [[0,1,1],[0,1,0],[0,1,0]],
+    [[0,0,0],[1,1,1],[0,0,1]],
+    [[0,1,0],[0,1,0],[1,1,0]],
+  ]},
+  L:{ color:COLORS.L, rotations:[
+    [[0,0,1],[1,1,1],[0,0,0]],
+    [[0,1,0],[0,1,0],[0,1,1]],
+    [[0,0,0],[1,1,1],[1,0,0]],
+    [[1,1,0],[0,1,0],[0,1,0]],
+  ]},
 };
 const PIECE_TYPES = Object.keys(PIECES);
 
@@ -134,1176 +121,978 @@ const ctx    = canvas.getContext('2d');
 canvas.width  = CANVAS_W;
 canvas.height = CANVAS_H;
 
-let gameState   = 'menu';
-let difficulty  = 'easy';
-let board       = [];
-let score       = 0;
-let level       = 1;
-let lines       = 0;
-let paused      = false;
+let gameState = 'menu';   // menu | howto | playing | upgrade | gameover
+let difficulty = 'easy';
+let board = [], score = 0, level = 1, lines = 0, paused = false;
+let combo = 0, maxCombo = 0;
+let piecesPlaced = 0, observations = 0, tetrisCount = 0;
+let sessionStart = 0;
 
-// Current piece
-let cur         = null;   // { type, color, rotations, rotIdx, x, y, shapeA, shapeB, collapsed, spawnTime }
-let holdPiece   = null;   // { type, color, rotations }
-let holdPiece2  = null;   // second hold slot (upgrade)
-let canHold     = true;
-let bag         = [];     // next pieces bag
-let nextPieces  = [];     // [next, next+1]
+let cur = null, holdPiece = null, holdPiece2 = null, canHold = true;
+let bag = [], nextPieces = [];
 
-// Timers
-let lastTime      = 0;
-let fallAccum     = 0;
-let softDropActive = false;
-let lockTimer     = null;
-let flashRows     = [];   // {row, frames}
-let collapseGlow  = null; // {x, y, timer}
+let lastTime = 0, fallAccum = 0, softDropActive = false;
+let lockTimer = null, flashRows = [], collapseGlow = null;
+let floats = [], particles = [];
 
-// Floating text
-let floats = [];
-
-// Upgrades
-let activeUpgrades = [];
-let scoreBoostLines = 0;
-let upgradeOptions  = [];
-let upgradeHover    = -1;
-
-// Game over countdown
-let gameOverCountup = 0;
-let gameOverStart   = 0;
-
-// Background menu pieces
+let activeUpgrades = [], scoreBoostLines = 0;
+let upgradeOptions = [], upgradeHover = -1;
+let gameOverStart = 0;
 let menuPieces = [];
+let shiftDown = false;
+let menuHover = '', playAgainHover = false, howtoHover = false;
+let howtoPage = 0;
 
-// Controls pressed
-let keys = {};
-
-// Board offset
-const BOARD_X = PADDING + LEFT_PANEL;
-const BOARD_Y = PADDING + 30;
+// High scores (localStorage)
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem('qt_scores') || '[]'); } catch { return []; }
+}
+function saveScore(s, d) {
+  const scores = loadScores();
+  scores.push({ score: s, diff: d, date: new Date().toLocaleDateString() });
+  scores.sort((a, b) => b.score - a.score);
+  scores.splice(5); // keep top 5
+  try { localStorage.setItem('qt_scores', JSON.stringify(scores)); } catch {}
+}
+let highScores = loadScores();
 
 // =============================================================================
 // SECTION 4: UPGRADE POOL
 // =============================================================================
 const UPGRADE_POOL = [
-  {
-    id: 'slow_fall',
-    name: 'Slow Fall',
-    emoji: '🐢',
-    desc: 'Pieces fall 20% slower permanently',
-    apply: () => { /* handled in fall interval calc */ },
-  },
-  {
-    id: 'double_clear',
-    name: 'Double Clear',
-    emoji: '⚡',
-    desc: '10% chance each line clear counts as two',
-    apply: () => {},
-  },
-  {
-    id: 'lucky_collapse',
-    name: 'Lucky Collapse',
-    emoji: '🎯',
-    desc: 'Quantum collapse always picks the better shape',
-    apply: () => {},
-  },
-  {
-    id: 'extra_hold',
-    name: 'Extra Hold',
-    emoji: '📦',
-    desc: 'Hold queue expands to 2 pieces',
-    apply: () => {},
-  },
-  {
-    id: 'score_boost',
-    name: 'Score Boost',
-    emoji: '💰',
-    desc: 'All points x1.5 for the next 20 lines',
-    apply: () => { scoreBoostLines += 20; },
-  },
-  {
-    id: 'steady_hand',
-    name: 'Steady Hand',
-    emoji: '🧘',
-    desc: 'Collapse timer gains +2 seconds permanently',
-    apply: () => {},
-  },
-  {
-    id: 'sharp_eye',
-    name: 'Sharp Eye',
-    emoji: '👁',
-    desc: 'Superposed shapes render at 70% opacity',
-    apply: () => {},
-  },
+  { id:'slow_fall',      name:'Slow Fall',      emoji:'🐢', desc:'Pieces fall 20% slower permanently',          apply:()=>{} },
+  { id:'double_clear',   name:'Double Clear',   emoji:'⚡', desc:'10% chance each line clear counts as two',    apply:()=>{} },
+  { id:'lucky_collapse', name:'Lucky Collapse', emoji:'🎯', desc:'Collapse always picks the better shape',       apply:()=>{} },
+  { id:'extra_hold',     name:'Extra Hold',     emoji:'📦', desc:'Hold queue expands to 2 pieces',               apply:()=>{} },
+  { id:'score_boost',    name:'Score Boost',    emoji:'💰', desc:'All points ×1.5 for the next 20 lines',        apply:()=>{ scoreBoostLines+=20; } },
+  { id:'steady_hand',    name:'Steady Hand',    emoji:'🧘', desc:'Collapse timer gains +2 seconds permanently',  apply:()=>{} },
+  { id:'sharp_eye',      name:'Sharp Eye',      emoji:'👁', desc:'Superposed shapes render at 70% opacity',      apply:()=>{} },
 ];
-
-function hasUpgrade(id) { return activeUpgrades.some(u => u.id === id); }
+function hasUpgrade(id) { return activeUpgrades.some(u=>u.id===id); }
 
 function getFallInterval() {
-  let base = (difficulty === 'easy') ? 800 : 500;
-  base -= (level - 1) * 50;
-  base = Math.max(base, 100);
-  if (hasUpgrade('slow_fall')) base *= 1.2;
-  return base;
+  let b = difficulty==='easy' ? 800 : 500;
+  b -= (level-1)*50; b = Math.max(b,100);
+  if (hasUpgrade('slow_fall')) b*=1.2;
+  return b;
 }
-
 function getCollapseTimer() {
-  let t = (difficulty === 'easy') ? 8000 : 3000;
-  const steadyCount = activeUpgrades.filter(u => u.id === 'steady_hand').length;
-  t += steadyCount * 2000;
+  let t = difficulty==='easy' ? 8000 : 3000;
+  t += activeUpgrades.filter(u=>u.id==='steady_hand').length * 2000;
   return t;
 }
-
-function getOpacity() {
-  return hasUpgrade('sharp_eye') ? 0.70 : 0.45;
-}
-
-function applyScoreMultiplier(pts) {
-  let mult = 1;
-  if (scoreBoostLines > 0) mult *= 1.5;
-  return Math.round(pts * mult);
+function getOpacity() { return hasUpgrade('sharp_eye') ? 0.70 : 0.45; }
+function applyScoreMult(pts) {
+  let m = 1;
+  if (scoreBoostLines>0) m*=1.5;
+  if (combo>1) m*=(1+combo*0.1);
+  return Math.round(pts*m);
 }
 
 // =============================================================================
 // SECTION 5: BOARD FUNCTIONS
 // =============================================================================
-function initBoard() {
-  board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
-}
+function initBoard() { board=Array.from({length:ROWS},()=>Array(COLS).fill(null)); }
 
-function randomType(exclude) {
-  const types = PIECE_TYPES.filter(t => t !== exclude);
-  return types[Math.floor(Math.random() * types.length)];
-}
-
-function refillBag() {
-  const shuffled = [...PIECE_TYPES].sort(() => Math.random() - 0.5);
-  bag.push(...shuffled);
-}
-
-function nextFromBag() {
-  if (bag.length < 2) refillBag();
-  return bag.shift();
-}
-
-function makePiece(type) {
-  return { type, color: PIECES[type].color, rotations: PIECES[type].rotations };
-}
+function randomType(ex) { return PIECE_TYPES.filter(t=>t!==ex)[Math.floor(Math.random()*(PIECE_TYPES.length-1))]; }
+function refillBag() { bag.push(...[...PIECE_TYPES].sort(()=>Math.random()-0.5)); }
+function nextFromBag() { if(bag.length<2)refillBag(); return bag.shift(); }
+function makePiece(t) { return {type:t,color:PIECES[t].color,rotations:PIECES[t].rotations}; }
 
 function spawnPiece() {
-  if (nextPieces.length < 2) {
-    nextPieces.push(makePiece(nextFromBag()));
-    nextPieces.push(makePiece(nextFromBag()));
-  }
-  const base = nextPieces.shift();
+  while(nextPieces.length<2) nextPieces.push(makePiece(nextFromBag()));
+  const base=nextPieces.shift();
   nextPieces.push(makePiece(nextFromBag()));
-
-  const p = {
-    ...base,
-    rotIdx: 0,
-    x: Math.floor(COLS / 2) - 2,
-    y: 0,
-    spawnTime: performance.now(),
-    collapsed: false,
-  };
+  const p={...base, rotIdx:0, x:Math.floor(COLS/2)-2, y:0, spawnTime:performance.now(), collapsed:false};
   assignQuantumPair(p);
-
-  // Check game over
-  if (!isValid(p, p.x, p.y, p.rotIdx)) {
-    gameState = 'gameover';
-    gameOverStart = performance.now();
-    return;
-  }
-  cur = p;
-  canHold = true;
-  lockTimer = null;
+  if(!isValid(p,p.x,p.y,p.rotIdx)) { gameState='gameover'; gameOverStart=performance.now(); saveScore(score,difficulty); highScores=loadScores(); playGameOver(); return; }
+  cur=p; canHold=true; lockTimer=null;
 }
 
-function getShape(piece, rotIdx) {
-  return piece.rotations[rotIdx % piece.rotations.length];
-}
+function getShape(p,r) { return p.rotations[r%p.rotations.length]; }
 
-function isValid(piece, x, y, rotIdx) {
-  const shape = getShape(piece, rotIdx);
-  for (let r = 0; r < shape.length; r++) {
-    for (let c = 0; c < shape[r].length; c++) {
-      if (!shape[r][c]) continue;
-      const nx = x + c;
-      const ny = y + r;
-      if (nx < 0 || nx >= COLS || ny >= ROWS) return false;
-      if (ny >= 0 && board[ny][nx]) return false;
-    }
+function isValid(p,x,y,r) {
+  const s=getShape(p,r);
+  for(let row=0;row<s.length;row++) for(let c=0;c<s[row].length;c++) {
+    if(!s[row][c]) continue;
+    const nx=x+c, ny=y+row;
+    if(nx<0||nx>=COLS||ny>=ROWS) return false;
+    if(ny>=0&&board[ny][nx]) return false;
   }
   return true;
 }
 
 function movePiece(dx) {
-  if (!cur || paused) return;
-  if (isValid(cur, cur.x + dx, cur.y, cur.rotIdx)) {
-    cur.x += dx;
-    if (lockTimer !== null) lockTimer = performance.now();
-    playMove();
-  }
+  if(!cur||paused) return;
+  if(isValid(cur,cur.x+dx,cur.y,cur.rotIdx)) { cur.x+=dx; if(lockTimer!==null)lockTimer=performance.now(); playMove(); }
 }
 
 function rotatePiece() {
-  if (!cur || paused) return;
-  const newRot = (cur.rotIdx + 1) % cur.rotations.length;
-  if (isValid(cur, cur.x, cur.y, newRot)) {
-    cur.rotIdx = newRot;
-  } else if (isValid(cur, cur.x + 1, cur.y, newRot)) {
-    cur.x += 1; cur.rotIdx = newRot;
-  } else if (isValid(cur, cur.x - 1, cur.y, newRot)) {
-    cur.x -= 1; cur.rotIdx = newRot;
-  }
-  if (lockTimer !== null) lockTimer = performance.now();
+  if(!cur||paused) return;
+  const nr=(cur.rotIdx+1)%cur.rotations.length;
+  if(isValid(cur,cur.x,cur.y,nr)) cur.rotIdx=nr;
+  else if(isValid(cur,cur.x+1,cur.y,nr)) { cur.x+=1; cur.rotIdx=nr; }
+  else if(isValid(cur,cur.x-1,cur.y,nr)) { cur.x-=1; cur.rotIdx=nr; }
+  if(lockTimer!==null) lockTimer=performance.now();
   playRotate();
 }
 
-function ghostY() {
-  if (!cur) return cur ? cur.y : 0;
-  let gy = cur.y;
-  while (isValid(cur, cur.x, gy + 1, cur.rotIdx)) gy++;
-  return gy;
-}
-
-function ghostYForShape(shapePiece, x, y, rotIdx) {
-  let gy = y;
-  while (isValid(shapePiece, x, gy + 1, rotIdx)) gy++;
-  return gy;
-}
+function ghostY() { let g=cur.y; while(isValid(cur,cur.x,g+1,cur.rotIdx))g++; return g; }
+function ghostYFor(p,x,y,r) { let g=y; while(isValid(p,x,g+1,r))g++; return g; }
 
 function lockPiece() {
-  if (!cur) return;
-  const shape = getShape(cur, cur.rotIdx);
-  for (let r = 0; r < shape.length; r++) {
-    for (let c = 0; c < shape[r].length; c++) {
-      if (!shape[r][c]) continue;
-      const ny = cur.y + r;
-      const nx = cur.x + c;
-      if (ny >= 0 && ny < ROWS) board[ny][nx] = cur.color;
-    }
+  if(!cur) return;
+  const s=getShape(cur,cur.rotIdx);
+  for(let r=0;r<s.length;r++) for(let c=0;c<s[r].length;c++) {
+    if(!s[r][c]) continue;
+    const ny=cur.y+r, nx=cur.x+c;
+    if(ny>=0&&ny<ROWS) board[ny][nx]=cur.color;
   }
-  cur = null;
-  lockTimer = null;
+  piecesPlaced++;
+  cur=null; lockTimer=null;
   clearLines();
 }
 
 function clearLines() {
-  const full = [];
-  for (let r = 0; r < ROWS; r++) {
-    if (board[r].every(c => c !== null)) full.push(r);
-  }
-  if (full.length === 0) { spawnPiece(); return; }
+  const full=[];
+  for(let r=0;r<ROWS;r++) if(board[r].every(c=>c!==null)) full.push(r);
+  if(!full.length) { combo=0; spawnPiece(); return; }
 
-  // Flash
-  flashRows = full.map(row => ({ row, frames: FLASH_FRAMES }));
+  flashRows=full.map(row=>({row,frames:3}));
+  spawnParticles(full);
 
-  // Schedule remove after flash
-  setTimeout(() => {
-    // Remove lines
-    let count = full.length;
-    if (hasUpgrade('double_clear') && Math.random() < 0.1) count *= 2;
-    const remaining = board.filter((_, i) => !full.includes(i));
-    while (remaining.length < ROWS) remaining.unshift(Array(COLS).fill(null));
-    board = remaining;
-    flashRows = [];
+  setTimeout(()=>{
+    let cnt=full.length;
+    if(hasUpgrade('double_clear')&&Math.random()<0.1) cnt=Math.min(cnt*2,ROWS);
+    const rem=board.filter((_,i)=>!full.includes(i));
+    while(rem.length<ROWS) rem.unshift(Array(COLS).fill(null));
+    board=rem; flashRows=[];
 
-    // Score
-    const lineScores = [0, 100, 300, 500, 800];
-    let pts = (lineScores[Math.min(full.length, 4)] || 800) * level;
-    pts = applyScoreMultiplier(pts);
-    score += pts;
-    lines += full.length;
+    const lpts=[0,100,300,500,800];
+    let pts=(lpts[Math.min(full.length,4)]||800)*level;
+    if(full.length>=4) { tetrisCount++; pts+=500; }
+    combo++;
+    maxCombo=Math.max(maxCombo,combo);
+    pts=applyScoreMult(pts);
+    score+=pts;
+    lines+=full.length;
+    if(scoreBoostLines>0) scoreBoostLines=Math.max(0,scoreBoostLines-full.length);
 
-    // Score boost countdown
-    if (scoreBoostLines > 0) scoreBoostLines = Math.max(0, scoreBoostLines - full.length);
+    const newLv=Math.floor(lines/10)+1;
+    if(newLv>level) { level=newLv; playLevelUp(); }
 
-    // Level up
-    const newLevel = Math.floor(lines / 10) + 1;
-    if (newLevel > level) { level = newLevel; playLevelUp(); }
-
-    // Line clear sound
-    if (full.length >= 4) playTetris();
+    if(combo>1) addFloat(`${combo}x COMBO!`, BOARD_X+COLS*CELL/2, BOARD_Y+ROWS*CELL/2, '#ffe600');
+    if(full.length>=4) { playTetris(); addFloat('TETRIS! +500', BOARD_X+COLS*CELL/2, BOARD_Y+80, '#00f5ff'); }
     else playLineClear();
 
-    // Upgrade check
-    if (Math.floor(lines / 10) > Math.floor((lines - full.length) / 10)) {
-      gameState = 'upgrade';
-      showUpgradeScreen();
-    } else {
-      spawnPiece();
-    }
+    if(Math.floor(lines/10)>Math.floor((lines-full.length)/10)) { gameState='upgrade'; showUpgradeScreen(); }
+    else spawnPiece();
   }, 80);
 }
 
-function hardDrop() {
-  if (!cur || paused) return;
-  cur.y = ghostY();
-  lockPiece();
-}
+function hardDrop() { if(!cur||paused) return; cur.y=ghostY(); lockPiece(); }
 
 function holdCurrent() {
-  if (!cur || !canHold || paused) return;
-  const hasExtra = hasUpgrade('extra_hold');
-
-  if (holdPiece === null) {
-    holdPiece = makePiece(cur.type);
-    canHold = false;
-    spawnPiece();
-  } else if (hasExtra && holdPiece2 === null) {
-    holdPiece2 = makePiece(cur.type);
-    canHold = false;
-    spawnPiece();
-  } else {
-    const tmp = makePiece(cur.type);
-    const restored = makePiece(holdPiece.type);
-    holdPiece = tmp;
-    const p = { ...restored, rotIdx: 0, x: Math.floor(COLS / 2) - 2, y: 0, spawnTime: performance.now(), collapsed: false };
-    assignQuantumPair(p);
-    cur = p;
-    canHold = false;
+  if(!cur||!canHold||paused) return;
+  const hasExtra=hasUpgrade('extra_hold');
+  if(!holdPiece) { holdPiece=makePiece(cur.type); canHold=false; spawnPiece(); }
+  else if(hasExtra&&!holdPiece2) { holdPiece2=makePiece(cur.type); canHold=false; spawnPiece(); }
+  else {
+    const tmp=makePiece(cur.type), res=makePiece(holdPiece.type);
+    holdPiece=tmp;
+    const p={...res,rotIdx:0,x:Math.floor(COLS/2)-2,y:0,spawnTime:performance.now(),collapsed:false};
+    assignQuantumPair(p); cur=p; canHold=false;
   }
 }
 
 // =============================================================================
 // SECTION 6: QUANTUM FUNCTIONS
 // =============================================================================
-function assignQuantumPair(piece) {
-  piece.shapeA = piece.type;
-  piece.shapeB = randomType(piece.type);
-  piece.collapsed = false;
-}
+function assignQuantumPair(p) { p.shapeA=p.type; p.shapeB=randomType(p.type); p.collapsed=false; }
 
-function calculateGapScore(type, x, y, rotIdx) {
-  const shape = PIECES[type].rotations[rotIdx % PIECES[type].rotations.length];
-  let gaps = 0;
-  for (let c = 0; c < shape[0].length; c++) {
-    // Find lowest filled cell in this column
-    let lastFilled = -1;
-    for (let r = 0; r < shape.length; r++) {
-      if (shape[r][c]) lastFilled = r;
-    }
-    if (lastFilled === -1) continue;
-    // Count empty cells below in board
-    const boardRow = y + lastFilled + 1;
-    for (let br = boardRow; br < ROWS; br++) {
-      if (!board[br][x + c]) gaps++;
-      else break;
-    }
+function calcGaps(type,x,y,r) {
+  const s=PIECES[type].rotations[r%PIECES[type].rotations.length];
+  let g=0;
+  for(let c=0;c<s[0].length;c++) {
+    let last=-1;
+    for(let row=0;row<s.length;row++) if(s[row][c]) last=row;
+    if(last<0) continue;
+    for(let br=y+last+1;br<ROWS;br++) { if(!board[br][x+c])g++; else break; }
   }
-  return gaps;
+  return g;
 }
 
 function collapsePiece(manual) {
-  if (!cur || cur.collapsed) return;
-
+  if(!cur||cur.collapsed) return;
+  const gA=calcGaps(cur.shapeA,cur.x,cur.y,cur.rotIdx);
+  const gB=calcGaps(cur.shapeB,cur.x,cur.y,cur.rotIdx);
   let chosen;
-  if (hasUpgrade('lucky_collapse')) {
-    // Lucky collapse always picks the shape with fewer gaps (better shape)
-    const gA = calculateGapScore(cur.shapeA, cur.x, cur.y, cur.rotIdx);
-    const gB = calculateGapScore(cur.shapeB, cur.x, cur.y, cur.rotIdx);
-    chosen = (gA <= gB) ? cur.shapeA : cur.shapeB;
-  } else {
-    const gA = calculateGapScore(cur.shapeA, cur.x, cur.y, cur.rotIdx);
-    const gB = calculateGapScore(cur.shapeB, cur.x, cur.y, cur.rotIdx);
-    if (gA < gB) chosen = cur.shapeA;
-    else if (gB < gA) chosen = cur.shapeB;
-    else chosen = Math.random() < 0.5 ? cur.shapeA : cur.shapeB;
-  }
+  if(hasUpgrade('lucky_collapse')) chosen=gA<=gB?cur.shapeA:cur.shapeB;
+  else if(gA<gB) chosen=cur.shapeA;
+  else if(gB<gA) chosen=cur.shapeB;
+  else chosen=Math.random()<0.5?cur.shapeA:cur.shapeB;
 
-  cur.type     = chosen;
-  cur.color    = PIECES[chosen].color;
-  cur.rotations = PIECES[chosen].rotations;
-  cur.collapsed = true;
-
-  // Glow pulse
-  collapseGlow = { x: cur.x, y: cur.y, timer: COLLAPSE_PULSE };
-
-  if (manual) {
-    const pts = applyScoreMultiplier(50);
-    score += pts;
-    addFloat(`+${pts} Observed!`, BOARD_X + cur.x * CELL + CELL, BOARD_Y + cur.y * CELL);
+  cur.type=chosen; cur.color=PIECES[chosen].color; cur.rotations=PIECES[chosen].rotations; cur.collapsed=true;
+  collapseGlow={x:cur.x,y:cur.y,timer:COLLAPSE_PULSE};
+  if(manual) {
+    observations++;
+    const pts=applyScoreMult(50);
+    score+=pts;
+    addFloat(`+${pts} Observed!`, BOARD_X+cur.x*CELL+CELL*1.5, BOARD_Y+cur.y*CELL, '#bf5fff');
   }
   playCollapse();
 }
 
-function renderSuperposition(x, y, rotIdx) {
-  if (!cur || cur.collapsed) return;
-  const op = getOpacity();
-
-  const shapeA = PIECES[cur.shapeA].rotations[rotIdx % PIECES[cur.shapeA].rotations.length];
-  const colA   = PIECES[cur.shapeA].color;
-  const shapeB = PIECES[cur.shapeB].rotations[rotIdx % PIECES[cur.shapeB].rotations.length];
-
-  // Ghost A
-  const gyA = ghostYForShape({ rotations: PIECES[cur.shapeA].rotations }, cur.x, cur.y, rotIdx);
-  const gyB = ghostYForShape({ rotations: PIECES[cur.shapeB].rotations }, cur.x, cur.y, rotIdx);
-
-  // Draw ghost A
-  ctx.globalAlpha = op * 0.45;
-  for (let r = 0; r < shapeA.length; r++) for (let c = 0; c < shapeA[r].length; c++) {
-    if (!shapeA[r][c]) continue;
-    drawCell(cur.x + c, gyA + r, colA, 0);
+// =============================================================================
+// SECTION 7: PARTICLES
+// =============================================================================
+function spawnParticles(rows) {
+  for(const row of rows) {
+    for(let c=0;c<COLS;c++) {
+      const col=board[row][c]||'#fff';
+      for(let i=0;i<4;i++) {
+        particles.push({
+          x: BOARD_X+c*CELL+CELL/2, y: BOARD_Y+row*CELL+CELL/2,
+          vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4-1,
+          r:Math.random()*4+2, color:col, alpha:1, life:30+Math.random()*20
+        });
+      }
+    }
   }
-  // Draw ghost B
-  ctx.globalAlpha = op * 0.45;
-  for (let r = 0; r < shapeB.length; r++) for (let c = 0; c < shapeB[r].length; c++) {
-    if (!shapeB[r][c]) continue;
-    drawCell(cur.x + c, gyB + r, '#ffffff', 0);
-  }
+}
 
-  ctx.globalAlpha = op;
-  // Draw shapeA
-  ctx.shadowBlur = 12;
-  ctx.shadowColor = colA;
-  for (let r = 0; r < shapeA.length; r++) for (let c = 0; c < shapeA[r].length; c++) {
-    if (!shapeA[r][c]) continue;
-    drawCell(x + c, y + r, colA, 0);
+function updateParticles(dt) {
+  for(const p of particles) {
+    p.x+=p.vx*(dt/16); p.y+=p.vy*(dt/16); p.vy+=0.15;
+    p.alpha=p.life/50; p.life--;
   }
-  // Draw shapeB in white
-  ctx.shadowColor = '#ffffff';
-  for (let r = 0; r < shapeB.length; r++) for (let c = 0; c < shapeB[r].length; c++) {
-    if (!shapeB[r][c]) continue;
-    drawCell(x + c, y + r, '#ffffff', 0);
+  particles=particles.filter(p=>p.life>0);
+}
+
+function renderParticles() {
+  for(const p of particles) {
+    ctx.globalAlpha=p.alpha;
+    ctx.fillStyle=p.color;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
   }
-  ctx.shadowBlur = 0;
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha=1;
 }
 
 // =============================================================================
-// SECTION 7: RENDER FUNCTIONS
+// SECTION 8: RENDER HELPERS
 // =============================================================================
-function drawCell(col, row, color, glow) {
-  const px = BOARD_X + col * CELL;
-  const py = BOARD_Y + row * CELL;
-  if (glow) { ctx.shadowBlur = 12; ctx.shadowColor = color; }
-  ctx.fillStyle = color;
-  ctx.fillRect(px + 1, py + 1, CELL - 2, CELL - 2);
-  if (glow) { ctx.shadowBlur = 0; }
+function roundRect(x,y,w,h,r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
 }
 
+function addFloat(text,x,y,color='#ffe600') { floats.push({text,x,y,color,alpha:1,vy:-1.2}); }
+
+function drawCell(col,row,color,glow) {
+  const px=BOARD_X+col*CELL, py=BOARD_Y+row*CELL;
+  if(glow){ctx.shadowBlur=12;ctx.shadowColor=color;}
+  ctx.fillStyle=color; ctx.fillRect(px+1,py+1,CELL-2,CELL-2);
+  if(glow) ctx.shadowBlur=0;
+}
+
+function drawMiniPiece(piece,cx,cy,size=18) {
+  if(!piece) return;
+  const s=piece.rotations[0], offX=cx-(s[0].length*size)/2, offY=cy-(s.length*size)/2;
+  ctx.shadowBlur=8; ctx.shadowColor=piece.color; ctx.fillStyle=piece.color;
+  for(let r=0;r<s.length;r++) for(let c=0;c<s[r].length;c++) {
+    if(!s[r][c]) continue;
+    ctx.fillRect(offX+c*size+1,offY+r*size+1,size-2,size-2);
+  }
+  ctx.shadowBlur=0;
+}
+
+// =============================================================================
+// SECTION 9: RENDER — BOARD & HUD
+// =============================================================================
 function renderBoard() {
-  // Board background
-  ctx.fillStyle = BOARD_BG;
-  ctx.fillRect(BOARD_X, BOARD_Y, COLS * CELL, ROWS * CELL);
+  ctx.fillStyle=BOARD_BG;
+  ctx.fillRect(BOARD_X,BOARD_Y,COLS*CELL,ROWS*CELL);
 
-  // Grid
-  ctx.strokeStyle = GRID_LINE;
-  ctx.lineWidth = 1;
-  for (let c = 0; c <= COLS; c++) {
-    ctx.beginPath();
-    ctx.moveTo(BOARD_X + c * CELL, BOARD_Y);
-    ctx.lineTo(BOARD_X + c * CELL, BOARD_Y + ROWS * CELL);
-    ctx.stroke();
-  }
-  for (let r = 0; r <= ROWS; r++) {
-    ctx.beginPath();
-    ctx.moveTo(BOARD_X, BOARD_Y + r * CELL);
-    ctx.lineTo(BOARD_X + COLS * CELL, BOARD_Y + r * CELL);
-    ctx.stroke();
+  ctx.strokeStyle=GRID_LINE; ctx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(BOARD_X+c*CELL,BOARD_Y);ctx.lineTo(BOARD_X+c*CELL,BOARD_Y+ROWS*CELL);ctx.stroke();}
+  for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(BOARD_X,BOARD_Y+r*CELL);ctx.lineTo(BOARD_X+COLS*CELL,BOARD_Y+r*CELL);ctx.stroke();}
+
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(board[r][c]) drawCell(c,r,board[r][c],true);
+
+  for(const f of flashRows) { ctx.fillStyle='white'; ctx.fillRect(BOARD_X,BOARD_Y+f.row*CELL,COLS*CELL,CELL); }
+
+  if(collapseGlow&&collapseGlow.timer>0) {
+    ctx.globalAlpha=collapseGlow.timer/COLLAPSE_PULSE*0.5;
+    ctx.fillStyle='white';
+    ctx.fillRect(BOARD_X,BOARD_Y,COLS*CELL,ROWS*CELL);
+    ctx.globalAlpha=1;
   }
 
-  // Locked cells
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if (board[r][c]) {
-        drawCell(c, r, board[r][c], true);
-      }
-    }
-  }
-
-  // Flash rows
-  for (const f of flashRows) {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(BOARD_X, BOARD_Y + f.row * CELL, COLS * CELL, CELL);
-  }
-
-  // Collapse glow
-  if (collapseGlow && collapseGlow.timer > 0) {
-    const progress = collapseGlow.timer / COLLAPSE_PULSE;
-    ctx.globalAlpha = progress * 0.6;
-    ctx.fillStyle   = 'white';
-    ctx.fillRect(BOARD_X + collapseGlow.x * CELL, BOARD_Y + collapseGlow.y * CELL, CELL * 4, CELL * 4);
-    ctx.globalAlpha = 1;
-  }
-
-  // Active piece
-  if (cur) {
-    if (!cur.collapsed) {
-      renderSuperposition(cur.x, cur.y, cur.rotIdx);
+  if(cur) {
+    if(!cur.collapsed) {
+      renderSuperposition();
     } else {
-      // Ghost
-      const gy = ghostY();
-      const shape = getShape(cur, cur.rotIdx);
-      ctx.globalAlpha = 0.22;
-      for (let r = 0; r < shape.length; r++) for (let c = 0; c < shape[r].length; c++) {
-        if (!shape[r][c]) continue;
-        drawCell(cur.x + c, gy + r, cur.color, 0);
-      }
-      ctx.globalAlpha = 1;
-      // Actual piece
-      ctx.shadowBlur  = 12;
-      ctx.shadowColor = cur.color;
-      for (let r = 0; r < shape.length; r++) for (let c = 0; c < shape[r].length; c++) {
-        if (!shape[r][c]) continue;
-        drawCell(cur.x + c, cur.y + r, cur.color, false);
-      }
-      ctx.shadowBlur = 0;
+      const gy=ghostY(), s=getShape(cur,cur.rotIdx);
+      ctx.globalAlpha=0.22;
+      for(let r=0;r<s.length;r++) for(let c=0;c<s[r].length;c++) if(s[r][c]) drawCell(cur.x+c,gy+r,cur.color,0);
+      ctx.globalAlpha=1;
+      ctx.shadowBlur=12; ctx.shadowColor=cur.color;
+      for(let r=0;r<s.length;r++) for(let c=0;c<s[r].length;c++) if(s[r][c]) drawCell(cur.x+c,cur.y+r,cur.color,false);
+      ctx.shadowBlur=0;
     }
   }
+
+  renderParticles();
 }
 
-function drawMiniPiece(piece, cx, cy) {
-  if (!piece) return;
-  const shape = piece.rotations[0];
-  const size  = 18;
-  const offX  = cx - (shape[0].length * size) / 2;
-  const offY  = cy - (shape.length * size) / 2;
-  ctx.shadowBlur  = 8;
-  ctx.shadowColor = piece.color;
-  ctx.fillStyle   = piece.color;
-  for (let r = 0; r < shape.length; r++) for (let c = 0; c < shape[r].length; c++) {
-    if (!shape[r][c]) continue;
-    ctx.fillRect(offX + c * size + 1, offY + r * size + 1, size - 2, size - 2);
-  }
-  ctx.shadowBlur = 0;
+function renderSuperposition() {
+  if(!cur||cur.collapsed) return;
+  const op=getOpacity();
+  const sA=PIECES[cur.shapeA].rotations[cur.rotIdx%PIECES[cur.shapeA].rotations.length], colA=PIECES[cur.shapeA].color;
+  const sB=PIECES[cur.shapeB].rotations[cur.rotIdx%PIECES[cur.shapeB].rotations.length];
+  const gyA=ghostYFor({rotations:PIECES[cur.shapeA].rotations},cur.x,cur.y,cur.rotIdx);
+  const gyB=ghostYFor({rotations:PIECES[cur.shapeB].rotations},cur.x,cur.y,cur.rotIdx);
+
+  ctx.globalAlpha=op*0.35;
+  for(let r=0;r<sA.length;r++) for(let c=0;c<sA[r].length;c++) if(sA[r][c]) drawCell(cur.x+c,gyA+r,colA,0);
+  for(let r=0;r<sB.length;r++) for(let c=0;c<sB[r].length;c++) if(sB[r][c]) drawCell(cur.x+c,gyB+r,'#fff',0);
+
+  ctx.globalAlpha=op; ctx.shadowBlur=12;
+  ctx.shadowColor=colA;
+  for(let r=0;r<sA.length;r++) for(let c=0;c<sA[r].length;c++) if(sA[r][c]) drawCell(cur.x+c,cur.y+r,colA,0);
+  ctx.shadowColor='#fff';
+  for(let r=0;r<sB.length;r++) for(let c=0;c<sB[r].length;c++) if(sB[r][c]) drawCell(cur.x+c,cur.y+r,'#fff',0);
+  ctx.shadowBlur=0; ctx.globalAlpha=1;
 }
 
 function renderHUD() {
-  ctx.font      = '600 11px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.textAlign = 'left';
+  ctx.textAlign='left';
+  const lx=PADDING+8, rx=BOARD_X+COLS*CELL+PADDING;
 
   // ---- LEFT PANEL ----
-  const lx = PADDING + 10;
-  let ly = BOARD_Y + 10;
+  let ly=BOARD_Y+10;
+  const gold=scoreBoostLines>0?'#ffd700':'white';
+  label(lx,ly,'SCORE'); ly+=17;
+  ctx.font=`700 ${scoreBoostLines>0?'18':'15'}px Inter`;
+  ctx.fillStyle=gold;
+  if(scoreBoostLines>0){ctx.shadowBlur=8;ctx.shadowColor='#ffd700';}
+  ctx.fillText(score.toLocaleString(),lx,ly); ctx.shadowBlur=0; ly+=26;
 
-  // Title labels
-  const scoreTint = scoreBoostLines > 0 ? '#ffd700' : 'white';
+  label(lx,ly,'LEVEL'); ly+=17;
+  big(lx,ly,level,'white'); ly+=24;
+  label(lx,ly,'LINES'); ly+=17;
+  big(lx,ly,lines,'white'); ly+=24;
 
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.fillText('SCORE', lx, ly); ly += 18;
-  ctx.font      = `700 ${scoreBoostLines > 0 ? '18px' : '16px'} Inter`;
-  ctx.fillStyle = scoreTint;
-  ctx.shadowBlur   = scoreBoostLines > 0 ? 10 : 0;
-  ctx.shadowColor  = '#ffd700';
-  ctx.fillText(score.toLocaleString(), lx, ly); ly += 26;
-  ctx.shadowBlur = 0;
+  if(combo>1) {
+    ctx.font='700 12px Inter'; ctx.fillStyle='#ffe600';
+    ctx.shadowBlur=6; ctx.shadowColor='#ffe600';
+    ctx.fillText(`${combo}x COMBO`,lx,ly); ctx.shadowBlur=0;
+  }
+  ly+=18;
 
-  ctx.font      = '600 11px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.fillText('LEVEL', lx, ly); ly += 16;
-  ctx.font      = '700 16px Inter';
-  ctx.fillStyle = 'white';
-  ctx.fillText(level, lx, ly); ly += 24;
+  label(lx,ly,'BEST'); ly+=17;
+  const best=highScores[0]?.score||0;
+  ctx.font='600 12px Inter'; ctx.fillStyle='rgba(255,215,0,0.7)';
+  ctx.fillText(best.toLocaleString(),lx,ly); ly+=22;
 
-  ctx.font      = '600 11px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.fillText('LINES', lx, ly); ly += 16;
-  ctx.font      = '700 16px Inter';
-  ctx.fillStyle = 'white';
-  ctx.fillText(lines, lx, ly); ly += 30;
-
-  // Active upgrades
-  ctx.font      = '600 10px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.fillText('UPGRADES', lx, ly); ly += 16;
-  for (const u of activeUpgrades) {
-    ctx.font      = '11px Inter';
-    ctx.fillStyle = '#adf';
-    ctx.fillText(u.emoji + ' ' + u.name.slice(0, 12), lx, ly); ly += 15;
+  if(activeUpgrades.length) {
+    label(lx,ly,'UPGRADES'); ly+=17;
+    for(const u of activeUpgrades) {
+      ctx.font='11px Inter'; ctx.fillStyle='#adf';
+      ctx.fillText(u.emoji+' '+u.name.slice(0,14),lx,ly); ly+=14;
+    }
+    ly+=4;
   }
 
-  ly += 10;
   // Controls
-  ctx.font      = '600 9px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.28)';
-  const controls = [
-    '← → Move',
-    '↑   Rotate',
-    '↓   Soft Drop',
-    'S+↓ Hard Drop',
-    'SPC Observe',
-    'C   Hold',
-    'P   Pause',
-    'R   Restart',
-  ];
-  for (const ln of controls) {
-    ctx.fillText(ln, lx, ly); ly += 13;
-  }
+  const ctrls=['← → Move','↑  Rotate','↓  Soft Drop','S+↓ Hard Drop','SPC Observe','C  Hold','P  Pause','T  Record','I  How to Play'];
+  ctx.font='600 9px Inter';
+  for(const c of ctrls) { ctx.fillStyle='rgba(255,255,255,0.27)'; ctx.fillText(c,lx,ly); ly+=13; }
 
   // ---- RIGHT PANEL ----
-  const rx = BOARD_X + COLS * CELL + PADDING;
-  let ry = BOARD_Y + 10;
+  let ry=BOARD_Y+10;
+  label(rx,ry,'NEXT'); ry+=16;
+  if(nextPieces[0]) drawMiniPiece(nextPieces[0],rx+60,ry+28); ry+=68;
+  if(nextPieces[1]) drawMiniPiece(nextPieces[1],rx+60,ry+20); ry+=55;
 
-  ctx.textAlign = 'left';
-  ctx.font      = '600 11px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.fillText('NEXT', rx, ry); ry += 16;
+  label(rx,ry,'HOLD'); ry+=16;
+  if(holdPiece) drawMiniPiece(holdPiece,rx+60,ry+25); ry+=55;
 
-  if (nextPieces[0]) { drawMiniPiece(nextPieces[0], rx + 55, ry + 30); }
-  ry += 75;
-  if (nextPieces[1]) { drawMiniPiece(nextPieces[1], rx + 55, ry + 20); }
-  ry += 60;
-
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.fillText('HOLD', rx, ry); ry += 16;
-  if (holdPiece) { drawMiniPiece(holdPiece, rx + 55, ry + 25); }
-  ry += 55;
-
-  if (hasUpgrade('extra_hold')) {
-    ctx.fillText('HOLD 2', rx, ry); ry += 16;
-    if (holdPiece2) { drawMiniPiece(holdPiece2, rx + 55, ry + 25); }
-    ry += 55;
+  if(hasUpgrade('extra_hold')) {
+    label(rx,ry,'HOLD 2'); ry+=16;
+    if(holdPiece2) drawMiniPiece(holdPiece2,rx+60,ry+25); ry+=55;
   }
 
   // Quantum status
-  if (cur && !cur.collapsed) {
-    ctx.font      = '600 10px Inter';
-    ctx.fillStyle = '#bf5fff';
-    ctx.shadowBlur   = 6;
-    ctx.shadowColor  = '#bf5fff';
-    ctx.fillText('SUPERPOSED', rx, ry); ry += 14;
-    ctx.shadowBlur = 0;
-    ctx.fillStyle  = 'rgba(255,255,255,0.5)';
-    const elapsed  = performance.now() - cur.spawnTime;
-    const timer    = getCollapseTimer();
-    const left     = Math.max(0, timer - elapsed) / 1000;
-    ctx.font       = '700 13px Inter';
-    ctx.fillStyle  = left < 1.5 ? '#ff4444' : 'white';
-    ctx.fillText(left.toFixed(1) + 's', rx, ry + 14);
+  if(cur&&!cur.collapsed) {
+    ctx.font='700 10px Inter'; ctx.fillStyle='#bf5fff';
+    ctx.shadowBlur=6; ctx.shadowColor='#bf5fff';
+    ctx.fillText('SUPERPOSED',rx,ry); ctx.shadowBlur=0; ry+=15;
+    const left=Math.max(0,getCollapseTimer()-(performance.now()-cur.spawnTime))/1000;
+    ctx.font='700 14px Inter';
+    ctx.fillStyle=left<1.5?'#ff4444':'white';
+    ctx.fillText(left.toFixed(1)+'s',rx,ry+14); ry+=30;
+
+    // Progress bar
+    const pct=1-(left/getCollapseTimer()*1000);
+    ctx.fillStyle='rgba(255,255,255,0.1)';
+    ctx.fillRect(rx,ry,100,4);
+    const barColor=left<1.5?'#ff4444':'#bf5fff';
+    ctx.fillStyle=barColor;
+    ctx.shadowBlur=4; ctx.shadowColor=barColor;
+    ctx.fillRect(rx,ry,Math.max(0,pct)*100,4);
+    ctx.shadowBlur=0; ry+=14;
   }
+
+  // Stats
+  label(rx,ry,'STATS'); ry+=16;
+  ctx.font='600 10px Inter'; ctx.fillStyle='rgba(255,255,255,0.5)';
+  const elapsed=gameState==='playing'?Math.floor((performance.now()-sessionStart)/1000):0;
+  const mm=String(Math.floor(elapsed/60)).padStart(2,'0'), ss=String(elapsed%60).padStart(2,'0');
+  ctx.fillText(`⏱ ${mm}:${ss}`,rx,ry); ry+=13;
+  ctx.fillText(`🔭 ${observations} observed`,rx,ry); ry+=13;
+  ctx.fillText(`🎯 Best combo ${maxCombo}x`,rx,ry); ry+=13;
+  ctx.fillText(`🏆 Tetris ×${tetrisCount}`,rx,ry);
+
+  // Floating texts
+  ctx.textAlign='center';
+  for(const f of floats) {
+    ctx.globalAlpha=f.alpha; ctx.font='700 14px Inter'; ctx.fillStyle=f.color;
+    ctx.shadowBlur=8; ctx.shadowColor=f.color;
+    ctx.fillText(f.text,f.x,f.y); ctx.shadowBlur=0;
+  }
+  ctx.globalAlpha=1;
 }
 
-function renderTitle() {
-  ctx.textAlign = 'center';
-  ctx.font      = '900 36px Inter';
-  ctx.shadowBlur   = 20;
-  ctx.shadowColor  = '#00f5ff';
-  ctx.fillStyle    = '#00f5ff';
-  ctx.fillText('QUANTUM TETRIS', CANVAS_W / 2, 48);
-  ctx.shadowBlur = 0;
+function label(x,y,text) {
+  ctx.font='600 10px Inter'; ctx.fillStyle='rgba(255,255,255,0.38)'; ctx.textAlign='left'; ctx.fillText(text,x,y);
+}
+function big(x,y,val,color) {
+  ctx.font='700 16px Inter'; ctx.fillStyle=color; ctx.textAlign='left'; ctx.fillText(val,x,y);
 }
 
+function renderPause() {
+  if(!paused) return;
+  ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.textAlign='center'; ctx.font='900 40px Inter'; ctx.fillStyle='white'; ctx.fillText('PAUSED',CANVAS_W/2,CANVAS_H/2);
+  ctx.font='400 14px Inter'; ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fillText('Press P to resume',CANVAS_W/2,CANVAS_H/2+35);
+}
+
+// =============================================================================
+// SECTION 10: RENDER — MENU
+// =============================================================================
 function renderMenu() {
-  // Background
-  ctx.fillStyle = BG;
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-  // Drifting background pieces
-  for (const mp of menuPieces) {
-    const p = PIECES[mp.type];
-    const shape = p.rotations[mp.rotIdx];
-    ctx.globalAlpha = 0.12;
-    ctx.fillStyle   = p.color;
-    for (let r = 0; r < shape.length; r++) for (let c = 0; c < shape[r].length; c++) {
-      if (!shape[r][c]) continue;
-      ctx.fillRect(mp.x + c * 22, mp.y + r * 22, 20, 20);
-    }
-    ctx.globalAlpha = 1;
+  ctx.fillStyle=BG; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+  for(const mp of menuPieces) {
+    const s=PIECES[mp.type].rotations[mp.rotIdx];
+    ctx.globalAlpha=0.12; ctx.fillStyle=PIECES[mp.type].color;
+    for(let r=0;r<s.length;r++) for(let c=0;c<s[r].length;c++) if(s[r][c]) ctx.fillRect(mp.x+c*22,mp.y+r*22,20,20);
+    ctx.globalAlpha=1;
   }
 
-  renderTitle();
+  ctx.textAlign='center';
+  ctx.font='900 40px Inter'; ctx.shadowBlur=22; ctx.shadowColor='#00f5ff'; ctx.fillStyle='#00f5ff';
+  ctx.fillText('QUANTUM TETRIS',CANVAS_W/2,52); ctx.shadowBlur=0;
+  ctx.font='400 13px Inter'; ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fillText('Every piece exists in two states — until it lands.',CANVAS_W/2,78);
 
-  // Subtitle
-  ctx.font      = '400 14px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillText('Every piece exists in two states — until it lands.', CANVAS_W / 2, 78);
+  const bW=195,bH=56,gap=28,bY=108;
+  const eX=CANVAS_W/2-bW-gap/2, hX=CANVAS_W/2+gap/2;
 
-  // Buttons — properly spaced with no overlap
-  const btnW = 200, btnH = 58, btnGap = 30;
-  const easX = CANVAS_W / 2 - btnW - btnGap / 2;
-  const harX = CANVAS_W / 2 + btnGap / 2;
-  const btnY = 120;
+  menuBtn('EASY',eX,bY,bW,bH,'#00e676','easy');
+  ctx.font='400 10px Inter'; ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.textAlign='center';
+  ctx.fillText('Slower fall · 8s collapse · Forgiving',eX+bW/2,bY+bH+16);
 
-  drawMenuButton('EASY', easX, btnY, btnW, btnH, '#00e676', 'easy');
-  ctx.font      = '400 11px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.textAlign = 'center';
-  ctx.fillText('Slower fall', easX + btnW / 2, btnY + btnH + 18);
-  ctx.fillText('8 sec collapse · Forgiving', easX + btnW / 2, btnY + btnH + 33);
+  menuBtn('HARD',hX,bY,bW,bH,'#ff1744','hard');
+  ctx.font='400 10px Inter'; ctx.fillStyle='rgba(255,255,255,0.45)';
+  ctx.fillText('Fast fall · 3s collapse · No mercy',hX+bW/2,bY+bH+16);
 
-  drawMenuButton('HARD', harX, btnY, btnW, btnH, '#ff1744', 'hard');
-  ctx.font      = '400 11px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.textAlign = 'center';
-  ctx.fillText('Fast fall', harX + btnW / 2, btnY + btnH + 18);
-  ctx.fillText('3 sec collapse · No mercy', harX + btnW / 2, btnY + btnH + 33);
+  // How to Play link
+  ctx.font='600 12px Inter';
+  ctx.fillStyle=howtoHover?'#00f5ff':'rgba(255,255,255,0.4)';
+  if(howtoHover){ctx.shadowBlur=6;ctx.shadowColor='#00f5ff';}
+  ctx.fillText('❓ How to Play  (I)',CANVAS_W/2,bY+bH+42); ctx.shadowBlur=0;
+
+  // High scores
+  if(highScores.length) {
+    ctx.fillStyle='rgba(255,255,255,0.08)';
+    roundRect(CANVAS_W/2-130,bY+bH+58,260,18+highScores.length*18,8); ctx.fill();
+    ctx.font='700 10px Inter'; ctx.fillStyle='rgba(255,215,0,0.7)';
+    ctx.fillText('HIGH SCORES',CANVAS_W/2,bY+bH+72);
+    highScores.forEach((s,i)=>{
+      ctx.font='600 11px Inter';
+      ctx.fillStyle=i===0?'#ffd700':'rgba(255,255,255,0.55)';
+      ctx.fillText(`#${i+1}  ${s.score.toLocaleString()}  [${s.diff.toUpperCase()}]  ${s.date}`,CANVAS_W/2,bY+bH+72+18*(i+1));
+    });
+  }
 }
 
-function drawMenuButton(label, x, y, w, h, color, id) {
-  const hov = menuHover === id;
-  ctx.fillStyle = hov ? color : 'rgba(255,255,255,0.05)';
-  ctx.shadowBlur   = hov ? 20 : 0;
-  ctx.shadowColor  = color;
-  roundRect(x, y, w, h, 10);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = color;
-  ctx.lineWidth   = 2;
-  roundRect(x, y, w, h, 10);
-  ctx.stroke();
-  ctx.font      = '700 20px Inter';
-  ctx.fillStyle = hov ? BG : color;
-  ctx.textAlign = 'center';
-  ctx.fillText(label, x + w / 2, y + h / 2 + 7);
+function menuBtn(label,x,y,w,h,color,id) {
+  const hov=menuHover===id;
+  ctx.fillStyle=hov?color:'rgba(255,255,255,0.05)';
+  ctx.shadowBlur=hov?20:0; ctx.shadowColor=color;
+  roundRect(x,y,w,h,10); ctx.fill(); ctx.shadowBlur=0;
+  ctx.strokeStyle=color; ctx.lineWidth=2; roundRect(x,y,w,h,10); ctx.stroke();
+  ctx.font='700 20px Inter'; ctx.fillStyle=hov?BG:color; ctx.textAlign='center';
+  ctx.fillText(label,x+w/2,y+h/2+7);
 }
 
-let menuHover = '';
+// =============================================================================
+// SECTION 11: RENDER — HOW TO PLAY
+// =============================================================================
+const HOWTO_PAGES = [
+  {
+    title: '⚛ What is Quantum Tetris?',
+    lines: [
+      'Standard Tetris, but with a twist:',
+      '',
+      'Every new piece spawns in SUPERPOSITION —',
+      'it simultaneously exists as TWO different shapes.',
+      '',
+      'You see both overlaid on screen, half-transparent.',
+      'Ghost pieces show where each shape would land.',
+      '',
+      'The piece must COLLAPSE into one definite',
+      'shape before it locks. You choose when.',
+      '',
+      'Collapse it early with SPACEBAR to score +50',
+      'and lock in the better shape.',
+      '',
+      'Wait too long and it auto-collapses.',
+    ],
+  },
+  {
+    title: '🎮 Controls',
+    lines: [
+      '← →       Move left / right',
+      '↑          Rotate clockwise',
+      '↓          Soft drop (faster fall)',
+      'Shift+↓    Hard drop (instant)',
+      '',
+      'SPACEBAR   Observe — collapse superposition',
+      '            +50 points!',
+      '',
+      'C           Hold piece',
+      'P           Pause / unpause',
+      'I           Toggle instructions',
+      '',
+      'T           Start / stop recording',
+      '            (saves .webm to downloads)',
+    ],
+  },
+  {
+    title: '⚡ Upgrades (unlocked every 10 lines)',
+    lines: [
+      '🐢 Slow Fall     — 20% slower fall permanently',
+      '⚡ Double Clear  — 10% chance: line counts twice',
+      '🎯 Lucky Collapse — always picks the better shape',
+      '📦 Extra Hold    — hold queue expands to 2 pieces',
+      '💰 Score Boost   — ×1.5 points for 20 lines',
+      '🧘 Steady Hand   — collapse timer +2s permanent',
+      '👁 Sharp Eye     — shapes render at 70% opacity',
+      '',
+      'Every 10 lines: choose 1 of 3 random upgrades.',
+      'Upgrades stack — get Lucky Collapse twice',
+      'and you\'ll always collapse to the best shape!',
+    ],
+  },
+  {
+    title: '💡 Tips & Tricks',
+    lines: [
+      '• The collapse timer shows a bar below the piece.',
+      '  Watch it — red means collapse in <1.5 seconds!',
+      '',
+      '• Observing manually is ALWAYS worth it.',
+      '  +50 points AND you pick the better shape.',
+      '',
+      '• Combos multiply score! Clear lines back-to-back',
+      '  to build your combo multiplier.',
+      '',
+      '• 4-line clear (Tetris) gives a +500 bonus.',
+      '',
+      '• Hard mode: 3s collapse timer — practice',
+      '  reading superposed shapes fast.',
+      '',
+      '• Press T to record your best games!',
+    ],
+  },
+];
 
+let howtoScrollY = 0;
+
+function renderHowto() {
+  ctx.fillStyle=BG; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+  // Bg
+  ctx.fillStyle='rgba(0,200,255,0.03)'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+  ctx.textAlign='center';
+  ctx.font='900 22px Inter'; ctx.shadowBlur=12; ctx.shadowColor='#00f5ff'; ctx.fillStyle='#00f5ff';
+  ctx.fillText(HOWTO_PAGES[howtoPage].title,CANVAS_W/2,52); ctx.shadowBlur=0;
+
+  // Content
+  ctx.textAlign='left'; ctx.font='400 13px Inter';
+  let ty=82;
+  for(const line of HOWTO_PAGES[howtoPage].lines) {
+    if(line==='') { ty+=8; continue; }
+    const first=line[0];
+    const isKey=['←','↑','↓','S','C','P','T','I'].includes(first)||line.startsWith('Shift')||line.startsWith('SPACE');
+    ctx.fillStyle=isKey?'#00e676':'rgba(255,255,255,0.82)';
+    if(line.startsWith('•')) ctx.fillStyle='rgba(255,215,0,0.9)';
+    ctx.fillText(line, CANVAS_W/2-170, ty); ty+=20;
+  }
+
+  // Page dots
+  const dotY=CANVAS_H-50;
+  for(let i=0;i<HOWTO_PAGES.length;i++) {
+    ctx.beginPath();
+    ctx.arc(CANVAS_W/2+(i-1.5)*20,dotY,5,0,Math.PI*2);
+    ctx.fillStyle=i===howtoPage?'#00f5ff':'rgba(255,255,255,0.2)'; ctx.fill();
+  }
+
+  // Nav buttons
+  const prevHov=howtoNav==='prev', nextHov=howtoNav==='next', backHov=howtoNav==='back';
+  ctx.textAlign='center';
+  if(howtoPage>0) {
+    ctx.fillStyle=prevHov?'#00f5ff':'rgba(255,255,255,0.3)';
+    ctx.shadowBlur=prevHov?8:0; ctx.shadowColor='#00f5ff';
+    ctx.font='700 14px Inter'; ctx.fillText('◀ Prev',CANVAS_W/2-120,CANVAS_H-24); ctx.shadowBlur=0;
+  }
+  if(howtoPage<HOWTO_PAGES.length-1) {
+    ctx.fillStyle=nextHov?'#00f5ff':'rgba(255,255,255,0.3)';
+    ctx.shadowBlur=nextHov?8:0; ctx.shadowColor='#00f5ff';
+    ctx.font='700 14px Inter'; ctx.fillText('Next ▶',CANVAS_W/2+120,CANVAS_H-24); ctx.shadowBlur=0;
+  }
+
+  ctx.fillStyle=backHov?'#ffe600':'rgba(255,255,255,0.3)';
+  ctx.shadowBlur=backHov?8:0; ctx.shadowColor='#ffe600';
+  ctx.font='700 14px Inter'; ctx.fillText('✕ Close',CANVAS_W/2,CANVAS_H-24); ctx.shadowBlur=0;
+}
+
+let howtoNav = '';
+
+// =============================================================================
+// SECTION 12: RENDER — UPGRADE SCREEN
+// =============================================================================
+function showUpgradeScreen() {
+  const sh=[...UPGRADE_POOL].sort(()=>Math.random()-0.5);
+  upgradeOptions=sh.slice(0,3); upgradeHover=-1;
+}
+
+function selectUpgrade(u) { activeUpgrades.push(u); u.apply(); gameState='playing'; spawnPiece(); }
+
+function renderUpgrade() {
+  ctx.fillStyle='rgba(0,0,0,0.85)'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.textAlign='center'; ctx.font='900 26px Inter';
+  ctx.shadowBlur=14; ctx.shadowColor='#bf5fff'; ctx.fillStyle='#bf5fff';
+  ctx.fillText('CHOOSE AN UPGRADE',CANVAS_W/2,72); ctx.shadowBlur=0;
+
+  const cW=160,cH=200,gap=18,totalW=3*cW+2*gap,sx=(CANVAS_W-totalW)/2,cy=95;
+  for(let i=0;i<upgradeOptions.length;i++) {
+    const u=upgradeOptions[i], cx=sx+i*(cW+gap), hov=upgradeHover===i;
+    ctx.fillStyle=hov?'rgba(50,30,70,0.98)':'rgba(20,18,30,0.95)';
+    ctx.shadowBlur=hov?22:0; ctx.shadowColor='#bf5fff';
+    roundRect(cx,cy,cW,cH,14); ctx.fill(); ctx.shadowBlur=0;
+    ctx.strokeStyle=hov?'#bf5fff':'rgba(255,255,255,0.15)'; ctx.lineWidth=hov?2.5:1;
+    roundRect(cx,cy,cW,cH,14); ctx.stroke();
+    ctx.font='30px Inter'; ctx.fillStyle='white'; ctx.fillText(u.emoji,cx+cW/2,cy+46);
+    ctx.font='700 12px Inter'; ctx.fillStyle=hov?'#e0aaff':'white'; ctx.fillText(u.name,cx+cW/2,cy+72);
+    // word-wrap desc
+    ctx.font='400 10px Inter'; ctx.fillStyle='rgba(255,255,255,0.5)';
+    let line='',lY=cy+90;
+    for(const w of u.desc.split(' ')) {
+      const t=line+w+' ';
+      if(ctx.measureText(t).width>cW-16&&line){ctx.fillText(line.trim(),cx+cW/2,lY);line=w+' ';lY+=13;}
+      else line=t;
+    }
+    if(line) ctx.fillText(line.trim(),cx+cW/2,lY);
+  }
+}
+
+// =============================================================================
+// SECTION 13: RENDER — GAME OVER
+// =============================================================================
 function renderGameOver() {
-  ctx.fillStyle = 'rgba(0,0,0,0.75)';
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  ctx.fillStyle='rgba(0,0,0,0.78)'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.textAlign='center';
+  ctx.font='900 46px Inter'; ctx.shadowBlur=24; ctx.shadowColor='#ff1744'; ctx.fillStyle='#ff1744';
+  ctx.fillText('GAME OVER',CANVAS_W/2,CANVAS_H/2-130); ctx.shadowBlur=0;
 
-  ctx.textAlign = 'center';
-  ctx.font      = '900 48px Inter';
-  ctx.shadowBlur   = 24;
-  ctx.shadowColor  = '#ff1744';
-  ctx.fillStyle    = '#ff1744';
-  ctx.fillText('GAME OVER', CANVAS_W / 2, CANVAS_H / 2 - 120);
-  ctx.shadowBlur = 0;
+  const el=Math.min(performance.now()-gameOverStart,1500);
+  const ds=Math.floor(el/1500*score);
+  ctx.font='700 20px Inter'; ctx.fillStyle='#ffd700';
+  ctx.fillText('Score: '+ds.toLocaleString(),CANVAS_W/2,CANVAS_H/2-88);
 
-  // Count-up animation
-  const elapsed = Math.min(performance.now() - gameOverStart, 1500);
-  const displayScore = Math.floor((elapsed / 1500) * score);
-  ctx.font      = '700 22px Inter';
-  ctx.fillStyle = '#ffd700';
-  ctx.fillText('Score: ' + displayScore.toLocaleString(), CANVAS_W / 2, CANVAS_H / 2 - 70);
+  ctx.font='400 14px Inter'; ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.fillText(`Lines: ${lines}   Level: ${level}   Tetris ×${tetrisCount}`,CANVAS_W/2,CANVAS_H/2-62);
+  ctx.fillText(`Observations: ${observations}   Best Combo: ${maxCombo}×`,CANVAS_W/2,CANVAS_H/2-42);
 
-  ctx.font      = '400 16px Inter';
-  ctx.fillStyle = 'white';
-  ctx.fillText('Lines: ' + lines + '   Level: ' + level, CANVAS_W / 2, CANVAS_H / 2 - 40);
-
-  if (activeUpgrades.length) {
-    ctx.font      = '600 13px Inter';
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillText('Upgrades collected:', CANVAS_W / 2, CANVAS_H / 2);
-    activeUpgrades.forEach((u, i) => {
-      ctx.fillText(u.emoji + ' ' + u.name, CANVAS_W / 2, CANVAS_H / 2 + 20 + i * 18);
+  // High scores
+  if(highScores.length) {
+    ctx.font='700 11px Inter'; ctx.fillStyle='rgba(255,215,0,0.7)';
+    ctx.fillText('TOP SCORES',CANVAS_W/2,CANVAS_H/2-16);
+    highScores.slice(0,3).forEach((s,i)=>{
+      ctx.font='600 11px Inter';
+      ctx.fillStyle=i===0?'#ffd700':'rgba(255,255,255,0.55)';
+      ctx.fillText(`${i+1}. ${s.score.toLocaleString()} [${s.diff.toUpperCase()}]`,CANVAS_W/2,CANVAS_H/2+4+i*16);
     });
   }
 
-  // Play again button
-  const bx = CANVAS_W / 2 - 100, by = CANVAS_H / 2 + 120;
-  const hov = playAgainHover;
-  ctx.fillStyle = hov ? '#00f5ff' : 'rgba(255,255,255,0.08)';
-  ctx.shadowBlur   = hov ? 18 : 0;
-  ctx.shadowColor  = '#00f5ff';
-  roundRect(bx, by, 200, 50, 10);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = '#00f5ff';
-  ctx.lineWidth   = 2;
-  roundRect(bx, by, 200, 50, 10);
-  ctx.stroke();
-  ctx.font      = '700 18px Inter';
-  ctx.fillStyle = hov ? BG : '#00f5ff';
-  ctx.fillText('PLAY AGAIN', bx + 100, by + 32);
-}
-
-let playAgainHover = false;
-
-function renderUpgradeScreen() {
-  ctx.fillStyle = 'rgba(0,0,0,0.82)';
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-  ctx.textAlign = 'center';
-  ctx.font      = '900 30px Inter';
-  ctx.shadowBlur   = 14;
-  ctx.shadowColor  = '#bf5fff';
-  ctx.fillStyle    = '#bf5fff';
-  ctx.fillText('CHOOSE AN UPGRADE', CANVAS_W / 2, 80);
-  ctx.shadowBlur = 0;
-
-  const cardW = 160, cardH = 200, gap = 20;
-  const totalW = 3 * cardW + 2 * gap;
-  const startX = (CANVAS_W - totalW) / 2;
-  const cardY  = 110;
-
-  for (let i = 0; i < upgradeOptions.length; i++) {
-    const u    = upgradeOptions[i];
-    const cx   = startX + i * (cardW + gap);
-    const hov  = upgradeHover === i;
-
-    // Card bg
-    ctx.fillStyle = hov ? 'rgba(40,30,60,0.98)' : 'rgba(20,18,30,0.95)';
-    ctx.shadowBlur   = hov ? 22 : 0;
-    ctx.shadowColor  = '#bf5fff';
-    roundRect(cx, cardY, cardW, cardH, 14);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = hov ? '#bf5fff' : 'rgba(255,255,255,0.15)';
-    ctx.lineWidth   = hov ? 2.5 : 1;
-    roundRect(cx, cardY, cardW, cardH, 14);
-    ctx.stroke();
-
-    // Emoji
-    ctx.font      = '32px Inter';
-    ctx.fillStyle = 'white';
-    ctx.fillText(u.emoji, cx + cardW / 2, cardY + 50);
-
-    // Name
-    ctx.font      = '700 13px Inter';
-    ctx.fillStyle = hov ? '#e0aaff' : 'white';
-    ctx.fillText(u.name, cx + cardW / 2, cardY + 82);
-
-    // Desc (word-wrap)
-    ctx.font      = '400 10px Inter';
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    const words = u.desc.split(' ');
-    let line = '', ly = cardY + 102;
-    for (const w of words) {
-      const test = line + w + ' ';
-      if (ctx.measureText(test).width > cardW - 20 && line) {
-        ctx.fillText(line.trim(), cx + cardW / 2, ly);
-        line = w + ' '; ly += 14;
-      } else { line = test; }
-    }
-    if (line) ctx.fillText(line.trim(), cx + cardW / 2, ly);
+  if(activeUpgrades.length) {
+    ctx.font='600 11px Inter'; ctx.fillStyle='rgba(173,221,255,0.7)';
+    ctx.fillText('Upgrades: '+activeUpgrades.map(u=>u.emoji+u.name).join(' · '),CANVAS_W/2,CANVAS_H/2+60);
   }
-}
 
-function renderFloatingText() {
-  for (const f of floats) {
-    ctx.globalAlpha = f.alpha;
-    ctx.font        = '700 14px Inter';
-    ctx.fillStyle   = '#ffe600';
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = '#ffe600';
-    ctx.textAlign   = 'center';
-    ctx.fillText(f.text, f.x, f.y);
-    ctx.shadowBlur  = 0;
-  }
-  ctx.globalAlpha = 1;
-}
-
-function renderPauseOverlay() {
-  if (!paused) return;
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-  ctx.textAlign = 'center';
-  ctx.font      = '900 40px Inter';
-  ctx.fillStyle = 'white';
-  ctx.fillText('PAUSED', CANVAS_W / 2, CANVAS_H / 2);
-  ctx.font      = '400 14px Inter';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.fillText('Press P to resume', CANVAS_W / 2, CANVAS_H / 2 + 35);
-}
-
-function roundRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
-}
-
-function addFloat(text, x, y) {
-  floats.push({ text, x, y, alpha: 1, dy: -1 });
+  // Play Again button
+  const bx=CANVAS_W/2-100, by=CANVAS_H/2+80;
+  ctx.fillStyle=playAgainHover?'#00f5ff':'rgba(255,255,255,0.07)';
+  ctx.shadowBlur=playAgainHover?18:0; ctx.shadowColor='#00f5ff';
+  roundRect(bx,by,200,48,10); ctx.fill(); ctx.shadowBlur=0;
+  ctx.strokeStyle='#00f5ff'; ctx.lineWidth=2; roundRect(bx,by,200,48,10); ctx.stroke();
+  ctx.font='700 17px Inter'; ctx.fillStyle=playAgainHover?BG:'#00f5ff';
+  ctx.fillText('PLAY AGAIN',bx+100,by+31);
 }
 
 // =============================================================================
-// SECTION 8: INPUT HANDLING
+// SECTION 14: INPUT HANDLING
 // =============================================================================
-let shiftDown = false;
+document.addEventListener('keydown', e=>{
+  if(e.key==='Shift') { shiftDown=true; return; }
 
-document.addEventListener('keydown', e => {
-  if (gameState === 'menu') return;
-  if (e.key === 'Shift') { shiftDown = true; return; }
-  if (e.key === 'p' || e.key === 'P') { paused = !paused; return; }
-  if (e.key === 'r' || e.key === 'R') { if (gameState === 'gameover') resetGame(); return; }
-  if (paused || gameState !== 'playing') return;
+  // Global toggles
+  if(e.key==='i'||e.key==='I') {
+    if(gameState==='howto') gameState=prevState;
+    else { prevState=gameState; gameState='howto'; howtoPage=0; }
+    return;
+  }
+  if(e.key==='t'||e.key==='T') { toggleRecording(); return; }
 
-  switch (e.key) {
+  if(gameState==='howto') {
+    if(e.key==='ArrowRight'||e.key==='ArrowDown') howtoPage=Math.min(howtoPage+1,HOWTO_PAGES.length-1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp') howtoPage=Math.max(howtoPage-1,0);
+    if(e.key==='Escape') gameState=prevState;
+    return;
+  }
+  if(gameState==='menu') return;
+  if(e.key==='p'||e.key==='P') { if(gameState==='playing') paused=!paused; return; }
+  if(e.key==='r'||e.key==='R') { if(gameState==='gameover') resetGame(); return; }
+  if(paused||gameState!=='playing') return;
+  switch(e.key) {
     case 'ArrowLeft':  e.preventDefault(); movePiece(-1); break;
     case 'ArrowRight': e.preventDefault(); movePiece(1);  break;
     case 'ArrowUp':    e.preventDefault(); rotatePiece(); break;
-    case 'ArrowDown':
-      e.preventDefault();
-      if (shiftDown) hardDrop();
-      else softDropActive = true;
-      break;
-    case ' ':
-      e.preventDefault();
-      if (cur && !cur.collapsed) collapsePiece(true);
-      break;
-    case 'c': case 'C': holdCurrent(); break;
+    case 'ArrowDown':  e.preventDefault(); shiftDown?hardDrop():(softDropActive=true); break;
+    case ' ':          e.preventDefault(); if(cur&&!cur.collapsed)collapsePiece(true); break;
+    case 'c':case 'C': holdCurrent(); break;
   }
 });
+document.addEventListener('keyup', e=>{ if(e.key==='Shift')shiftDown=false; if(e.key==='ArrowDown')softDropActive=false; });
 
-document.addEventListener('keyup', e => {
-  if (e.key === 'Shift') shiftDown = false;
-  if (e.key === 'ArrowDown') softDropActive = false;
-});
+let prevState='menu';
 
-canvas.addEventListener('mousemove', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx   = e.clientX - rect.left;
-  const my   = e.clientY - rect.top;
+canvas.addEventListener('mousemove', e=>{
+  const r=canvas.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(canvas.width/r.width);
+  const my=(e.clientY-r.top)*(canvas.height/r.height);
 
-  if (gameState === 'menu') {
-    const btnW = 200, btnH = 58, btnGap = 30, btnY = 120;
-    const easX = CANVAS_W / 2 - btnW - btnGap / 2;
-    const harX = CANVAS_W / 2 + btnGap / 2;
-    if (mx >= easX && mx <= easX + btnW && my >= btnY && my <= btnY + btnH) menuHover = 'easy';
-    else if (mx >= harX && mx <= harX + btnW && my >= btnY && my <= btnY + btnH) menuHover = 'hard';
-    else menuHover = '';
+  menuHover=''; howtoHover=false; playAgainHover=false; howtoNav='';
+
+  if(gameState==='menu') {
+    const bW=195,bH=56,gap=28,bY=108;
+    const eX=CANVAS_W/2-bW-gap/2, hX=CANVAS_W/2+gap/2;
+    if(mx>=eX&&mx<=eX+bW&&my>=bY&&my<=bY+bH) menuHover='easy';
+    else if(mx>=hX&&mx<=hX+bW&&my>=bY&&my<=bY+bH) menuHover='hard';
+    if(my>=bY+bH+30&&my<=bY+bH+46) howtoHover=true;
   }
-
-  if (gameState === 'gameover') {
-    const bx = CANVAS_W / 2 - 100, by = CANVAS_H / 2 + 120;
-    playAgainHover = mx >= bx && mx <= bx + 200 && my >= by && my <= by + 50;
+  if(gameState==='gameover') {
+    const bx=CANVAS_W/2-100,by=CANVAS_H/2+80;
+    playAgainHover=mx>=bx&&mx<=bx+200&&my>=by&&my<=by+48;
   }
-
-  if (gameState === 'upgrade') {
-    const cardW = 160, gap = 20;
-    const totalW = 3 * cardW + 2 * gap;
-    const startX = (CANVAS_W - totalW) / 2;
-    const cardY  = 110, cardH = 200;
-    upgradeHover = -1;
-    for (let i = 0; i < upgradeOptions.length; i++) {
-      const cx = startX + i * (cardW + gap);
-      if (mx >= cx && mx <= cx + cardW && my >= cardY && my <= cardY + cardH) {
-        upgradeHover = i;
-      }
+  if(gameState==='upgrade') {
+    const cW=160,gap=18,totalW=3*cW+2*gap,sx=(CANVAS_W-totalW)/2,cy=95;
+    upgradeHover=-1;
+    for(let i=0;i<upgradeOptions.length;i++) {
+      const cx=sx+i*(cW+gap);
+      if(mx>=cx&&mx<=cx+cW&&my>=cy&&my<=cy+200) upgradeHover=i;
     }
   }
+  if(gameState==='howto') {
+    if(Math.abs(mx-CANVAS_W/2)<50&&my>=CANVAS_H-36&&my<=CANVAS_H-12) howtoNav='back';
+    else if(mx<CANVAS_W/2-80&&my>=CANVAS_H-36) howtoNav='prev';
+    else if(mx>CANVAS_W/2+80&&my>=CANVAS_H-36) howtoNav='next';
+  }
 });
 
-canvas.addEventListener('click', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx   = e.clientX - rect.left;
-  const my   = e.clientY - rect.top;
+canvas.addEventListener('click', e=>{
+  const r=canvas.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(canvas.width/r.width);
+  const my=(e.clientY-r.top)*(canvas.height/r.height);
+  initAudio();
 
-  if (gameState === 'menu') {
-    initAudio();
-    const btnW = 200, btnH = 58, btnGap = 30, btnY = 120;
-    const easX = CANVAS_W / 2 - btnW - btnGap / 2;
-    const harX = CANVAS_W / 2 + btnGap / 2;
-    if (mx >= easX && mx <= easX + btnW && my >= btnY && my <= btnY + btnH) startGame('easy');
-    else if (mx >= harX && mx <= harX + btnW && my >= btnY && my <= btnY + btnH) startGame('hard');
-    return;
+  if(gameState==='menu') {
+    const bW=195,bH=56,gap=28,bY=108;
+    const eX=CANVAS_W/2-bW-gap/2, hX=CANVAS_W/2+gap/2;
+    if(mx>=eX&&mx<=eX+bW&&my>=bY&&my<=bY+bH) { startGame('easy'); return; }
+    if(mx>=hX&&mx<=hX+bW&&my>=bY&&my<=bY+bH) { startGame('hard'); return; }
+    if(my>=bY+bH+30&&my<=bY+bH+46) { prevState='menu'; gameState='howto'; howtoPage=0; return; }
   }
-
-  if (gameState === 'gameover' && playAgainHover) {
-    resetGame();
-    return;
-  }
-
-  if (gameState === 'upgrade') {
-    const cardW = 160, gap = 20;
-    const totalW = 3 * cardW + 2 * gap;
-    const startX = (CANVAS_W - totalW) / 2;
-    const cardY  = 110, cardH = 200;
-    for (let i = 0; i < upgradeOptions.length; i++) {
-      const cx = startX + i * (cardW + gap);
-      if (mx >= cx && mx <= cx + cardW && my >= cardY && my <= cardY + cardH) {
-        selectUpgrade(upgradeOptions[i]);
-        return;
-      }
+  if(gameState==='gameover'&&playAgainHover) { resetGame(); return; }
+  if(gameState==='upgrade') {
+    const cW=160,gap=18,totalW=3*cW+2*gap,sx=(CANVAS_W-totalW)/2,cy=95;
+    for(let i=0;i<upgradeOptions.length;i++) {
+      const cx=sx+i*(cW+gap);
+      if(mx>=cx&&mx<=cx+cW&&my>=cy&&my<=cy+200) { selectUpgrade(upgradeOptions[i]); return; }
     }
+  }
+  if(gameState==='howto') {
+    if(Math.abs(mx-CANVAS_W/2)<50&&my>=CANVAS_H-36&&my<=CANVAS_H-12) { gameState=prevState; return; }
+    if(mx<CANVAS_W/2-80&&my>=CANVAS_H-36) { howtoPage=Math.max(howtoPage-1,0); return; }
+    if(mx>CANVAS_W/2+80&&my>=CANVAS_H-36) { howtoPage=Math.min(howtoPage+1,HOWTO_PAGES.length-1); return; }
   }
 });
 
 // =============================================================================
-// SECTION 9: AUDIO FUNCTIONS
+// SECTION 15: RECORDING (MediaRecorder API)
 // =============================================================================
-let audioCtx = null;
+let mediaRecorder=null, recChunks=[], isRecording=false;
 
-function initAudio() {
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function toggleRecording() {
+  if(!isRecording) startRecording();
+  else stopRecording();
 }
 
-function playTone(freq, dur, type = 'sine', vol = 0.18) {
-  if (!audioCtx) return;
+function startRecording() {
   try {
-    const osc  = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type      = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur / 1000);
-    osc.start(audioCtx.currentTime);
-    osc.stop(audioCtx.currentTime + dur / 1000 + 0.05);
+    const stream=canvas.captureStream(30);
+    mediaRecorder=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9'});
+    recChunks=[];
+    mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) recChunks.push(e.data); };
+    mediaRecorder.onstop=()=>{
+      const blob=new Blob(recChunks,{type:'video/webm'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=`quantum-tetris-${Date.now()}.webm`; a.click();
+      URL.revokeObjectURL(url);
+      document.getElementById('rec-badge').classList.remove('on');
+    };
+    mediaRecorder.start(100);
+    isRecording=true;
+    document.getElementById('rec-badge').classList.add('on');
+    addFloat('● REC started',CANVAS_W/2,80,'#ff1744');
+  } catch(err) {
+    addFloat('Recording unavailable',CANVAS_W/2,80,'#ff4444');
+  }
+}
+
+function stopRecording() {
+  if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop();
+  isRecording=false;
+  addFloat('Recording saved!',CANVAS_W/2,80,'#00e676');
+}
+
+// =============================================================================
+// SECTION 16: AUDIO
+// =============================================================================
+let audioCtx=null;
+function initAudio() { if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)(); }
+
+function playTone(freq,dur,type='sine',vol=0.16) {
+  if(!audioCtx) return;
+  try {
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur/1000);
+    o.start(); o.stop(audioCtx.currentTime+dur/1000+0.05);
   } catch {}
 }
-
-function playMove()      { playTone(220, 50, 'sine', 0.10); }
-function playRotate()    { playTone(330, 80, 'sine', 0.12); }
-function playCollapse()  { playTone(440, 200, 'sine', 0.14); playTone(660, 200, 'sine', 0.14); }
-function playLineClear() {
-  [440, 520, 600, 680].forEach((f, i) => {
-    setTimeout(() => playTone(f, 80, 'sine', 0.16), i * 50);
-  });
-}
-function playTetris() {
-  [523, 659, 784].forEach(f => playTone(f, 400, 'sine', 0.18));
-}
-function playLevelUp() {
-  [523, 659, 784, 1047].forEach((f, i) => {
-    setTimeout(() => playTone(f, 120, 'sine', 0.16), i * 80);
-  });
-}
-function playGameOver() {
-  [330, 247, 196].forEach((f, i) => {
-    setTimeout(() => playTone(f, 200, 'sine', 0.16), i * 150);
-  });
-}
+function playMove()     { playTone(220,50,'sine',0.09); }
+function playRotate()   { playTone(330,80,'sine',0.11); }
+function playCollapse() { playTone(440,200,'sine',0.13); playTone(660,200,'sine',0.13); }
+function playLineClear(){ [440,520,600,680].forEach((f,i)=>setTimeout(()=>playTone(f,80,'sine',0.15),i*50)); }
+function playTetris()   { [523,659,784].forEach(f=>playTone(f,400,'sine',0.17)); }
+function playLevelUp()  { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,120,'sine',0.15),i*80)); }
+function playGameOver() { [330,247,196].forEach((f,i)=>setTimeout(()=>playTone(f,200,'sine',0.15),i*150)); }
 
 // =============================================================================
-// SECTION 10: GAME LOOP
+// SECTION 17: GAME LOOP
 // =============================================================================
 function startGame(diff) {
-  difficulty = diff;
-  activeUpgrades = [];
-  scoreBoostLines = 0;
-  bag = [];
-  nextPieces = [];
-  holdPiece  = null;
-  holdPiece2 = null;
-  score  = 0;
-  level  = 1;
-  lines  = 0;
-  floats = [];
-  flashRows = [];
-  collapseGlow = null;
-  paused = false;
-  softDropActive = false;
-  initBoard();
-  refillBag();
+  difficulty=diff;
+  activeUpgrades=[]; scoreBoostLines=0;
+  bag=[]; nextPieces=[]; holdPiece=null; holdPiece2=null;
+  score=0; level=1; lines=0; paused=false;
+  combo=0; maxCombo=0; piecesPlaced=0; observations=0; tetrisCount=0;
+  floats=[]; particles=[]; flashRows=[]; collapseGlow=null; softDropActive=false;
+  sessionStart=performance.now();
+  initBoard(); refillBag();
   nextPieces.push(makePiece(nextFromBag()));
   nextPieces.push(makePiece(nextFromBag()));
-  spawnPiece();
-  gameState = 'playing';
+  spawnPiece(); gameState='playing';
 }
 
-function resetGame() {
-  gameState = 'menu';
-  initMenuPieces();
-}
-
-function showUpgradeScreen() {
-  // Pick 3 random non-duplicate upgrades
-  const shuffled = [...UPGRADE_POOL].sort(() => Math.random() - 0.5);
-  upgradeOptions = shuffled.slice(0, 3);
-  upgradeHover   = -1;
-}
-
-function selectUpgrade(upgrade) {
-  activeUpgrades.push(upgrade);
-  upgrade.apply();
-  gameState = 'playing';
-  spawnPiece();
-}
+function resetGame() { gameState='menu'; initMenuPieces(); }
 
 function initMenuPieces() {
-  menuPieces = [];
-  for (let i = 0; i < 18; i++) {
-    const type = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
-    menuPieces.push({
-      type,
-      rotIdx: Math.floor(Math.random() * 4),
-      x: Math.random() * (CANVAS_W - 100),
-      y: Math.random() * CANVAS_H - 50,
-      speed: 0.3 + Math.random() * 0.5,
-    });
-  }
+  menuPieces=[];
+  for(let i=0;i<20;i++) menuPieces.push({
+    type:PIECE_TYPES[Math.floor(Math.random()*PIECE_TYPES.length)],
+    rotIdx:Math.floor(Math.random()*4),
+    x:Math.random()*(CANVAS_W-80),
+    y:Math.random()*CANVAS_H-60,
+    speed:0.25+Math.random()*0.5,
+  });
 }
 
 function updateMenuPieces(dt) {
-  for (const mp of menuPieces) {
-    mp.y += mp.speed * dt * 0.06;
-    if (mp.y > CANVAS_H + 100) {
-      mp.y = -80;
-      mp.x = Math.random() * (CANVAS_W - 100);
-      mp.type   = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
-      mp.rotIdx = Math.floor(Math.random() * 4);
-    }
+  for(const mp of menuPieces) {
+    mp.y+=mp.speed*(dt/16);
+    if(mp.y>CANVAS_H+80) { mp.y=-80; mp.x=Math.random()*(CANVAS_W-80); mp.type=PIECE_TYPES[Math.floor(Math.random()*PIECE_TYPES.length)]; }
   }
 }
 
 function update(dt) {
-  if (gameState !== 'playing' || paused) return;
+  if(gameState!=='playing'||paused) return;
+  if(cur&&!cur.collapsed) { if(performance.now()-cur.spawnTime>=getCollapseTimer()) collapsePiece(false); }
 
-  // Quantum auto-collapse
-  if (cur && !cur.collapsed) {
-    const elapsed = performance.now() - cur.spawnTime;
-    if (elapsed >= getCollapseTimer()) collapsePiece(false);
-  }
-
-  // Fall
-  const interval = softDropActive ? Math.min(getFallInterval(), 80) : getFallInterval();
-  fallAccum += dt;
-  if (fallAccum >= interval) {
-    fallAccum = 0;
-    if (cur) {
-      if (isValid(cur, cur.x, cur.y + 1, cur.rotIdx)) {
-        cur.y++;
-        lockTimer = null;
-      } else {
-        // On surface
-        if (lockTimer === null) lockTimer = performance.now();
-        else if (performance.now() - lockTimer >= LOCK_DELAY) lockPiece();
-      }
+  const interval=softDropActive?Math.min(getFallInterval(),80):getFallInterval();
+  fallAccum+=dt;
+  if(fallAccum>=interval) {
+    fallAccum=0;
+    if(cur) {
+      if(isValid(cur,cur.x,cur.y+1,cur.rotIdx)) { cur.y++; lockTimer=null; }
+      else { if(!lockTimer) lockTimer=performance.now(); else if(performance.now()-lockTimer>=LOCK_DELAY) lockPiece(); }
     }
   }
-
-  // Collapse glow
-  if (collapseGlow && collapseGlow.timer > 0) {
-    collapseGlow.timer -= dt;
-  }
-
-  // Flash frames
-  for (const f of flashRows) f.frames--;
-
-  // Float text
-  for (const f of floats) {
-    f.y    -= 1.2;
-    f.alpha -= 0.02;
-  }
-  floats = floats.filter(f => f.alpha > 0);
+  if(collapseGlow&&collapseGlow.timer>0) collapseGlow.timer-=dt;
+  for(const f of flashRows) f.frames--;
+  for(const f of floats) { f.y+=f.vy; f.alpha-=0.018; }
+  floats=floats.filter(f=>f.alpha>0);
+  updateParticles(dt);
 }
 
 function render(ts) {
-  const dt = ts - lastTime;
-  lastTime = ts;
+  const dt=ts-lastTime; lastTime=ts;
+  ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  ctx.fillStyle=BG; ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
 
-  ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-  ctx.fillStyle = BG;
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-  if (gameState === 'menu') {
-    updateMenuPieces(dt);
-    renderMenu();
-  } else if (gameState === 'playing' || gameState === 'upgrade') {
-    update(dt);
-    renderBoard();
-    renderHUD();
-    renderFloatingText();
-    renderPauseOverlay();
-    if (gameState === 'upgrade') renderUpgradeScreen();
-  } else if (gameState === 'gameover') {
-    renderBoard();
-    renderHUD();
-    renderGameOver();
-    renderFloatingText();
+  if(gameState==='menu') { updateMenuPieces(dt); renderMenu(); }
+  else if(gameState==='howto') { renderHowto(); }
+  else if(gameState==='playing'||gameState==='upgrade') {
+    update(dt); renderBoard(); renderHUD(); renderPause();
+    if(gameState==='upgrade') renderUpgrade();
   }
+  else if(gameState==='gameover') { renderBoard(); renderHUD(); renderGameOver(); }
 
   requestAnimationFrame(render);
 }
 
-// Init
 initMenuPieces();
-requestAnimationFrame(ts => { lastTime = ts; requestAnimationFrame(render); });
+requestAnimationFrame(ts=>{ lastTime=ts; requestAnimationFrame(render); });
 </script>
 </body>
 </html>
