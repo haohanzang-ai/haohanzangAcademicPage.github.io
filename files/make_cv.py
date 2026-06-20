@@ -59,7 +59,7 @@ s += sec('Research & Academic Experience')
 s += entry('Agentic AI Research', 'Northwestern University  |  Summer 2026',
     'Conducting AI research under Prof. Naichen Shi (Industrial Engineering &amp; Mechanical Engineering). Designing experiments, collecting and analyzing data, co-authoring a research paper for publication.')
 s += entry('UT High School Research Academy -- X-Plants Project', 'University of Texas at Austin  |  Summer 2026',
-    '5-week intensive research endorsement program. Independent research project in plant biology; earned formal university-level research endorsement.')
+    '5-week intensive research endorsement program. Group research project in plant biology; earned formal university-level research endorsement.')
 s += entry('miRcore Computational Biology Camp', 'University of Michigan, Ann Arbor  |  Summer 2025',
     'Computational analysis of gene expression data. Explored gene regulation, replication, and isolation using bioinformatics tools.')
 
